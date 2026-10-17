@@ -56,15 +56,18 @@ export default {
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
       const normalized = await normalizeCatastrophicSsrResponse(response);
-      normalized.headers.set("X-Content-Type-Options", "nosniff");
-      normalized.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
-      normalized.headers.set("X-Frame-Options", "DENY");
-      normalized.headers.set("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
-      normalized.headers.set("Content-Security-Policy", "frame-ancestors 'none'; base-uri 'self'; object-src 'none'");
-      if (url.protocol === "https:") normalized.headers.set("Strict-Transport-Security", "max-age=31536000");
+      // Responses produced by the Vercel adapter can have immutable headers.
+      // Clone before adding security and cache headers.
+      const secured = new Response(normalized.body, normalized);
+      secured.headers.set("X-Content-Type-Options", "nosniff");
+      secured.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+      secured.headers.set("X-Frame-Options", "DENY");
+      secured.headers.set("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+      secured.headers.set("Content-Security-Policy", "frame-ancestors 'none'; base-uri 'self'; object-src 'none'");
+      if (url.protocol === "https:") secured.headers.set("Strict-Transport-Security", "max-age=31536000");
       if (url.pathname.startsWith("/admin") || url.pathname.startsWith("/api/") || url.pathname.startsWith("/_server"))
-        normalized.headers.set("Cache-Control", "no-store");
-      return normalized;
+        secured.headers.set("Cache-Control", "no-store");
+      return secured;
     } catch (error) {
       console.error(error);
       return new Response(renderErrorPage(), {
