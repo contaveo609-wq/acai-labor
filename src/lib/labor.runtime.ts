@@ -1,9 +1,11 @@
 export function assertLaborRequest(request: Request) {
   const url = new URL(request.url);
-  const publicBase = process.env["LABOR_PUBLIC_BASE_URL"] ||
-    (process.env["VERCEL_URL"] ? `https://${process.env["VERCEL_URL"]}` : undefined);
-  if (publicBase) {
-    if (url.origin !== new URL(publicBase).origin || url.protocol !== "https:")
+  const publicBases = [
+    process.env["LABOR_PUBLIC_BASE_URL"],
+    process.env["VERCEL_URL"] ? `https://${process.env["VERCEL_URL"]}` : undefined,
+  ].filter((value): value is string => Boolean(value)).map((value) => new URL(value).origin);
+  if (publicBases.length) {
+    if (!publicBases.includes(url.origin) || url.protocol !== "https:")
       throw new Error("Configure o domínio HTTPS da loja antes de publicar.");
     if (process.env["LABOR_ENCRYPT_DATA"] !== "1")
       throw new Error("Ative a criptografia dos dados antes de publicar.");
