@@ -1,0 +1,818 @@
+{
+  "store": {
+    "store_name": "Açaí Labor",
+    "tagline": "Mais sabor no seu dia.",
+    "description": "Açaí cremoso, cupuaçu e sorvetes. Do seu copo favorito ao tamanho para compartilhar.",
+    "logo_url": null,
+    "banner_url": null,
+    "address_line": "Vila Nova Galvão · São Paulo",
+    "delivery_time_min": 21,
+    "delivery_time_max": 55,
+    "delivery_fee": 5,
+    "whatsapp": "",
+    "phone": "",
+    "opening_hours": "Horários a confirmar",
+    "is_open": true
+  },
+  "categories": [
+    {
+      "id": "6088f04d-5bae-442e-a8a3-b1e8c78b99eb",
+      "name": "No copo",
+      "slug": "no-copo",
+      "emoji": null,
+      "sort_order": 0,
+      "is_active": true
+    },
+    {
+      "id": "8e775629-8b17-4cd5-af56-7865957ab3c2",
+      "name": "Açaí para compartilhar",
+      "slug": "acai-para-compartilhar",
+      "emoji": null,
+      "sort_order": 1,
+      "is_active": true
+    },
+    {
+      "id": "f4e917bf-b8a9-4429-a35c-d33dc3c4f277",
+      "name": "Cupuaçu",
+      "slug": "cupuacu",
+      "emoji": null,
+      "sort_order": 2,
+      "is_active": true
+    },
+    {
+      "id": "61ab1553-1406-40d7-ae73-bc09b60fc1de",
+      "name": "Sorvetes e picolés",
+      "slug": "sorvetes-e-picoles",
+      "emoji": null,
+      "sort_order": 3,
+      "is_active": true
+    },
+    {
+      "id": "d73988aa-8b0c-479c-a19f-3e068a1fd21e",
+      "name": "Atacado",
+      "slug": "atacado",
+      "emoji": null,
+      "sort_order": 4,
+      "is_active": true
+    }
+  ],
+  "products": [
+    {
+      "id": "f9970c53-62f4-4c61-ae0d-e1747747cc43",
+      "category_id": "8e775629-8b17-4cd5-af56-7865957ab3c2",
+      "name": "Açaí Labor · 1 litro",
+      "slug": "acai-labor-caixa-1l",
+      "description": "Açaí Labor traz a suavidade do açaí cremoso, com um sabor intenso que convida a uma experiência refrescante e nutritiva.",
+      "price": 29.9,
+      "price_from": false,
+      "weight": null,
+      "quantity_label": null,
+      "serves": null,
+      "is_active": true,
+      "is_sold_out": false,
+      "is_featured": false,
+      "featured_order": 0,
+      "sort_order": 0,
+      "product_images": [
+        {
+          "id": "d3d5fb17-98c4-4410-aa93-89c60996a212",
+          "url": "/catalog/acai-labor-caixa-1l-130df4070628362d2b6ce55621e87f21.webp",
+          "sort_order": 0,
+          "is_primary": true
+        }
+      ],
+      "addon_groups": [],
+      "promotions": [
+        {
+          "id": "76db5e8a-a23d-4d8b-a7c2-3e8f1675a2b1",
+          "title": "Preço do material fornecido",
+          "promo_price": 19.99,
+          "discount_percent": null,
+          "starts_at": null,
+          "ends_at": null,
+          "is_active": true
+        }
+      ],
+      "source_categories": [
+        "AÇAI ATACADO"
+      ]
+    },
+    {
+      "id": "8e66fca3-af03-4e4f-a75a-6198b0a692f7",
+      "category_id": "8e775629-8b17-4cd5-af56-7865957ab3c2",
+      "name": "Açaí Labor · 2 litros",
+      "slug": "acai-labor-2l",
+      "description": "Açaí de textura cremosa, perfeito para refrescar o seu dia. Um sabor intenso que encanta a cada colherada!",
+      "price": 39.9,
+      "price_from": false,
+      "weight": null,
+      "quantity_label": null,
+      "serves": null,
+      "is_active": true,
+      "is_sold_out": false,
+      "is_featured": false,
+      "featured_order": 1,
+      "sort_order": 1,
+      "product_images": [
+        {
+          "id": "88646629-93e1-439f-a504-fa7a30093a9e",
+          "url": "/catalog/acai-labor-2l-f83967f9a3f9c68c614b18e009780048.webp",
+          "sort_order": 0,
+          "is_primary": true
+        }
+      ],
+      "addon_groups": [],
+      "promotions": [
+        {
+          "id": "de863b75-e8d4-4cab-a6fc-18b330ce2e8d",
+          "title": "Preço do material fornecido",
+          "promo_price": 29.99,
+          "discount_percent": null,
+          "starts_at": null,
+          "ends_at": null,
+          "is_active": true
+        }
+      ],
+      "source_categories": [
+        "AÇAI ATACADO",
+        "AÇAÍ,CUPUAÇU E PICOLÉ LABOR DISTRIBUIÇÃO 5% TERÇA"
+      ]
+    },
+    {
+      "id": "2d3266a9-7fda-4e60-a464-e1b6de03d227",
+      "category_id": "8e775629-8b17-4cd5-af56-7865957ab3c2",
+      "name": "Açaí Labor · 10 litros",
+      "slug": "acai-labor-de-10-l",
+      "description": "DELICIOSO CREMOSO FÁCIL DE BOLEAR",
+      "price": 129.99,
+      "price_from": false,
+      "weight": null,
+      "quantity_label": null,
+      "serves": null,
+      "is_active": true,
+      "is_sold_out": false,
+      "is_featured": true,
+      "featured_order": 2,
+      "sort_order": 2,
+      "product_images": [
+        {
+          "id": "a0f28cc8-a047-45f3-a3d8-ced3d9004a60",
+          "url": "/catalog/acai-labor-de-10-l-8e5670f530613cd4fe848cd03308ae3c.webp",
+          "sort_order": 0,
+          "is_primary": true
+        }
+      ],
+      "addon_groups": [],
+      "promotions": [
+        {
+          "id": "9bebafa5-55ae-4623-a63a-444f42103468",
+          "title": "Preço do material fornecido",
+          "promo_price": 120,
+          "discount_percent": null,
+          "starts_at": null,
+          "ends_at": null,
+          "is_active": true
+        }
+      ],
+      "source_categories": [
+        "AÇAI ATACADO",
+        "AÇAÍ,CUPUAÇU E PICOLÉ LABOR DISTRIBUIÇÃO 5% TERÇA",
+        "Mais Pedidos"
+      ]
+    },
+    {
+      "id": "6f199eb2-844f-4880-a93e-69373ed543b6",
+      "category_id": "61ab1553-1406-40d7-ae73-bc09b60fc1de",
+      "name": "Picolés Labor · pacote com 10",
+      "slug": "picole-atacado-01-pacote-com-10-unidades",
+      "description": "ACIMA DE 10 PACOTES PREÇO DE ATACADO",
+      "price": 25,
+      "price_from": false,
+      "weight": null,
+      "quantity_label": null,
+      "serves": null,
+      "is_active": true,
+      "is_sold_out": false,
+      "is_featured": false,
+      "featured_order": 3,
+      "sort_order": 3,
+      "product_images": [
+        {
+          "id": "666cd3d5-0490-498e-a497-4baa07fad34e",
+          "url": "/catalog/picole-atacado-01-pacote-com-10-unidades-72e3982519162ca5b6efcc18894d2dbc.webp",
+          "sort_order": 0,
+          "is_primary": true
+        },
+        {
+          "id": "f9454dc1-612e-408b-a2e4-45eb31d80c0d",
+          "url": "/catalog/picole-atacado-01-pacote-com-10-unidades-7a0c43419d321cd324f0229ee5ebf1c4.webp",
+          "sort_order": 1,
+          "is_primary": false
+        },
+        {
+          "id": "08d071f9-e9fe-4f68-ada1-d88bae021af7",
+          "url": "/catalog/picole-atacado-01-pacote-com-10-unidades-9b2a684deb3fc55a38a4471f22642a73.webp",
+          "sort_order": 2,
+          "is_primary": false
+        },
+        {
+          "id": "a13b78ec-a5b5-4ba1-a200-bfcc02e50b66",
+          "url": "/catalog/picole-atacado-01-pacote-com-10-unidades-a1c3334e1c98c771d3c3731cb22a2e6d.webp",
+          "sort_order": 3,
+          "is_primary": false
+        }
+      ],
+      "addon_groups": [
+        {
+          "id": "f33f5dbd-66ea-4849-a1e7-bac88d548924",
+          "title": "Escolha o sabor do pacote",
+          "min_select": 1,
+          "max_select": 1,
+          "is_required": true,
+          "sort_order": 0,
+          "product_addons": [
+            {
+              "id": "0e2f953e-e701-45c8-a04e-24a49485af80",
+              "group_id": "f33f5dbd-66ea-4849-a1e7-bac88d548924",
+              "name": "manga",
+              "description": "Pacote com 10 unidades do mesmo sabor",
+              "price": 0,
+              "is_active": true,
+              "sort_order": 0
+            },
+            {
+              "id": "1ff05dbe-ea58-4b8d-a47e-ad8eac0a3899",
+              "group_id": "f33f5dbd-66ea-4849-a1e7-bac88d548924",
+              "name": "maracujá",
+              "description": "Pacote com 10 unidades do mesmo sabor",
+              "price": 0,
+              "is_active": true,
+              "sort_order": 1
+            },
+            {
+              "id": "5536b247-dc6c-4425-aa15-5a43add6e21f",
+              "group_id": "f33f5dbd-66ea-4849-a1e7-bac88d548924",
+              "name": "chiclete",
+              "description": "Pacote com 10 unidades do mesmo sabor",
+              "price": 0,
+              "is_active": true,
+              "sort_order": 2
+            },
+            {
+              "id": "fb4c4316-3a8b-4d94-a119-2fdf35e9c375",
+              "group_id": "f33f5dbd-66ea-4849-a1e7-bac88d548924",
+              "name": "musse de maracujá",
+              "description": "Pacote com 10 unidades do mesmo sabor",
+              "price": 0,
+              "is_active": true,
+              "sort_order": 3
+            },
+            {
+              "id": "3d9ffe2c-e5a4-4c43-a50b-ffa990f79d90",
+              "group_id": "f33f5dbd-66ea-4849-a1e7-bac88d548924",
+              "name": "coco branco",
+              "description": "Pacote com 10 unidades do mesmo sabor",
+              "price": 0,
+              "is_active": true,
+              "sort_order": 4
+            },
+            {
+              "id": "5777f307-9af6-4738-a7ab-991cea32a812",
+              "group_id": "f33f5dbd-66ea-4849-a1e7-bac88d548924",
+              "name": "leite condensado",
+              "description": "Pacote com 10 unidades do mesmo sabor",
+              "price": 0,
+              "is_active": true,
+              "sort_order": 5
+            },
+            {
+              "id": "f62a1469-b647-4f8f-a8f6-9a810e34bac9",
+              "group_id": "f33f5dbd-66ea-4849-a1e7-bac88d548924",
+              "name": "flocos",
+              "description": "Pacote com 10 unidades do mesmo sabor",
+              "price": 0,
+              "is_active": true,
+              "sort_order": 6
+            },
+            {
+              "id": "c7fc79d9-d664-42c8-ad54-617407a44fd1",
+              "group_id": "f33f5dbd-66ea-4849-a1e7-bac88d548924",
+              "name": "limão suiço",
+              "description": "Pacote com 10 unidades do mesmo sabor",
+              "price": 0,
+              "is_active": true,
+              "sort_order": 7
+            },
+            {
+              "id": "28813889-e832-451a-ac02-0bad4c0cfbf4",
+              "group_id": "f33f5dbd-66ea-4849-a1e7-bac88d548924",
+              "name": "morango",
+              "description": "Pacote com 10 unidades do mesmo sabor",
+              "price": 0,
+              "is_active": true,
+              "sort_order": 8
+            },
+            {
+              "id": "46da71ae-f4e4-48ed-adfa-59a010cff953",
+              "group_id": "f33f5dbd-66ea-4849-a1e7-bac88d548924",
+              "name": "milho verde",
+              "description": "Pacote com 10 unidades do mesmo sabor",
+              "price": 0,
+              "is_active": true,
+              "sort_order": 9
+            },
+            {
+              "id": "ab71451e-f4c6-4249-a4ed-d33b5df944e4",
+              "group_id": "f33f5dbd-66ea-4849-a1e7-bac88d548924",
+              "name": "goiaba",
+              "description": "Pacote com 10 unidades do mesmo sabor",
+              "price": 0,
+              "is_active": true,
+              "sort_order": 10
+            },
+            {
+              "id": "55ef4b67-e279-46d6-a9e1-63a22fdac7f8",
+              "group_id": "f33f5dbd-66ea-4849-a1e7-bac88d548924",
+              "name": "abacaxi",
+              "description": "Pacote com 10 unidades do mesmo sabor",
+              "price": 0,
+              "is_active": true,
+              "sort_order": 11
+            },
+            {
+              "id": "6cb33dac-4ee2-4faf-a0e5-c7babbabd965",
+              "group_id": "f33f5dbd-66ea-4849-a1e7-bac88d548924",
+              "name": "açai",
+              "description": "Pacote com 10 unidades do mesmo sabor",
+              "price": 0,
+              "is_active": true,
+              "sort_order": 12
+            },
+            {
+              "id": "baad262c-7000-4121-a9b4-c02681c88854",
+              "group_id": "f33f5dbd-66ea-4849-a1e7-bac88d548924",
+              "name": "chocolate",
+              "description": "Pacote com 10 unidades do mesmo sabor",
+              "price": 0,
+              "is_active": true,
+              "sort_order": 13
+            },
+            {
+              "id": "cc0c30df-5783-4bb3-a7bc-86a756e0117d",
+              "group_id": "f33f5dbd-66ea-4849-a1e7-bac88d548924",
+              "name": "blue ice",
+              "description": "Pacote com 10 unidades do mesmo sabor",
+              "price": 0,
+              "is_active": true,
+              "sort_order": 14
+            },
+            {
+              "id": "aa03da4b-1471-4f06-a5d3-200e563447e1",
+              "group_id": "f33f5dbd-66ea-4849-a1e7-bac88d548924",
+              "name": "groselha",
+              "description": "Pacote com 10 unidades do mesmo sabor",
+              "price": 0,
+              "is_active": true,
+              "sort_order": 15
+            },
+            {
+              "id": "24c37d88-0a37-48e9-a9f8-959d5916ddc2",
+              "group_id": "f33f5dbd-66ea-4849-a1e7-bac88d548924",
+              "name": "uva",
+              "description": "Pacote com 10 unidades do mesmo sabor",
+              "price": 0,
+              "is_active": true,
+              "sort_order": 16
+            },
+            {
+              "id": "273cf8ac-9870-4608-aeae-1aab9e5f36c2",
+              "group_id": "f33f5dbd-66ea-4849-a1e7-bac88d548924",
+              "name": "amendoim",
+              "description": "Pacote com 10 unidades do mesmo sabor",
+              "price": 0,
+              "is_active": true,
+              "sort_order": 17
+            },
+            {
+              "id": "86793117-0e62-41cb-a759-95321a74d6b7",
+              "group_id": "f33f5dbd-66ea-4849-a1e7-bac88d548924",
+              "name": "leite ninho",
+              "description": "Pacote com 10 unidades do mesmo sabor",
+              "price": 0,
+              "is_active": true,
+              "sort_order": 18
+            }
+          ]
+        }
+      ],
+      "promotions": [
+        {
+          "id": "5b76f312-6cf7-472b-a43a-8e5f745b47b5",
+          "title": "Preço do material fornecido",
+          "promo_price": 15,
+          "discount_percent": null,
+          "starts_at": null,
+          "ends_at": null,
+          "is_active": true
+        }
+      ],
+      "source_categories": [
+        "AÇAI ATACADO"
+      ]
+    },
+    {
+      "id": "26d4c8e8-3529-4587-a81c-b3c32489ba75",
+      "category_id": "8e775629-8b17-4cd5-af56-7865957ab3c2",
+      "name": "Açaí Labor · 5 litros",
+      "slug": "acai-labor-5l",
+      "description": "Açaí fresquinho, com sabor autêntico, direto da fábrica para você desfrutar a cada colherada.",
+      "price": 75,
+      "price_from": false,
+      "weight": null,
+      "quantity_label": null,
+      "serves": 3,
+      "is_active": true,
+      "is_sold_out": false,
+      "is_featured": true,
+      "featured_order": 4,
+      "sort_order": 4,
+      "product_images": [
+        {
+          "id": "f366abaa-1d2f-4cde-a884-b432b6c2f3d8",
+          "url": "/catalog/acai-labor-5l-91e2ab7948d5f2a90d9129c6d960ad0b.webp",
+          "sort_order": 0,
+          "is_primary": true
+        }
+      ],
+      "addon_groups": [],
+      "promotions": [
+        {
+          "id": "00ed4bd0-22aa-42b2-adbe-5c69eeaa6b79",
+          "title": "Preço do material fornecido",
+          "promo_price": 59.99,
+          "discount_percent": null,
+          "starts_at": null,
+          "ends_at": null,
+          "is_active": true
+        }
+      ],
+      "source_categories": [
+        "AÇAÍ,CUPUAÇU E PICOLÉ LABOR DISTRIBUIÇÃO 5% TERÇA",
+        "Mais Pedidos",
+        "PROMOÇÕES RELAMPAGO!!"
+      ]
+    },
+    {
+      "id": "35ad8bf3-8613-4240-a658-a27058516161",
+      "category_id": "f4e917bf-b8a9-4429-a35c-d33dc3c4f277",
+      "name": "Cupuaçu Labor · 5 litros",
+      "slug": "cupuacu-5-l",
+      "description": "DELICIOSO SABOROSO FÁCIL DE BOLEAR",
+      "price": 65,
+      "price_from": false,
+      "weight": null,
+      "quantity_label": null,
+      "serves": null,
+      "is_active": true,
+      "is_sold_out": false,
+      "is_featured": true,
+      "featured_order": 5,
+      "sort_order": 5,
+      "product_images": [
+        {
+          "id": "f1a568df-106e-42e0-a677-2713a0f86559",
+          "url": "/catalog/cupuacu-5-l-368cf9339a5226783a1d45e3c912044a.webp",
+          "sort_order": 0,
+          "is_primary": true
+        }
+      ],
+      "addon_groups": [],
+      "promotions": [],
+      "source_categories": [
+        "AÇAÍ,CUPUAÇU E PICOLÉ LABOR DISTRIBUIÇÃO 5% TERÇA",
+        "Mais Pedidos"
+      ]
+    },
+    {
+      "id": "6cc50f4e-e51b-4cfb-aad7-cf19705ae8f7",
+      "category_id": "f4e917bf-b8a9-4429-a35c-d33dc3c4f277",
+      "name": "Cupuaçu Labor · 10 litros",
+      "slug": "cupuacu-de-10-l",
+      "description": "DELICIOSO SABOROSO FÁCIL DE BOLEAR",
+      "price": 105,
+      "price_from": false,
+      "weight": null,
+      "quantity_label": null,
+      "serves": null,
+      "is_active": true,
+      "is_sold_out": false,
+      "is_featured": true,
+      "featured_order": 6,
+      "sort_order": 6,
+      "product_images": [
+        {
+          "id": "69249773-9670-461a-aeff-0b84abd04545",
+          "url": "/catalog/cupuacu-de-10-l-ad59e0f800d1fbee59dad9324c110063.webp",
+          "sort_order": 0,
+          "is_primary": true
+        }
+      ],
+      "addon_groups": [],
+      "promotions": [
+        {
+          "id": "a8666622-9166-4de6-a011-afa868f4449a",
+          "title": "Preço do material fornecido",
+          "promo_price": 95,
+          "discount_percent": null,
+          "starts_at": null,
+          "ends_at": null,
+          "is_active": true
+        }
+      ],
+      "source_categories": [
+        "AÇAÍ,CUPUAÇU E PICOLÉ LABOR DISTRIBUIÇÃO 5% TERÇA",
+        "Mais Pedidos"
+      ]
+    },
+    {
+      "id": "7e6d265b-55d1-46a6-a176-261de271c9e3",
+      "category_id": "f4e917bf-b8a9-4429-a35c-d33dc3c4f277",
+      "name": "Cupuaçu Labor · 2 litros",
+      "slug": "cupuacu-labor-2-litros",
+      "description": "DELICIOSO CUPUAÇU CREMOSO SABOROSO",
+      "price": 35,
+      "price_from": false,
+      "weight": null,
+      "quantity_label": null,
+      "serves": null,
+      "is_active": true,
+      "is_sold_out": false,
+      "is_featured": false,
+      "featured_order": 7,
+      "sort_order": 7,
+      "product_images": [
+        {
+          "id": "af38ef97-b6c4-4144-abc6-3f0dbf0e822f",
+          "url": "/catalog/cupuacu-labor-2-litros-6e682e6e58f49b00dd01a99ffeef926d.webp",
+          "sort_order": 0,
+          "is_primary": true
+        }
+      ],
+      "addon_groups": [],
+      "promotions": [
+        {
+          "id": "dfa20a14-b28c-4da6-a3c0-9556c5259bd8",
+          "title": "Preço do material fornecido",
+          "promo_price": 29.99,
+          "discount_percent": null,
+          "starts_at": null,
+          "ends_at": null,
+          "is_active": true
+        }
+      ],
+      "source_categories": [
+        "AÇAÍ,CUPUAÇU E PICOLÉ LABOR DISTRIBUIÇÃO 5% TERÇA"
+      ]
+    },
+    {
+      "id": "0a4d9a38-53c4-4709-ac9d-b4e3b3805590",
+      "category_id": "61ab1553-1406-40d7-ae73-bc09b60fc1de",
+      "name": "Sorvete de frutas vermelhas · 2 litros",
+      "slug": "sorvete-labor-2-litros-frutas-vermelhas",
+      "description": "Sorvete cremoso, feito na fábrica especialmente para você, com sabor que encanta a cada colherada.",
+      "price": 29.9,
+      "price_from": false,
+      "weight": null,
+      "quantity_label": null,
+      "serves": null,
+      "is_active": true,
+      "is_sold_out": false,
+      "is_featured": false,
+      "featured_order": 8,
+      "sort_order": 8,
+      "product_images": [],
+      "addon_groups": [],
+      "promotions": [
+        {
+          "id": "2d01fa1d-9d78-436e-a2e0-43862d8acfd7",
+          "title": "Preço do material fornecido",
+          "promo_price": 27.65,
+          "discount_percent": null,
+          "starts_at": null,
+          "ends_at": null,
+          "is_active": true
+        }
+      ],
+      "source_categories": [
+        "AÇAÍ,CUPUAÇU E PICOLÉ LABOR DISTRIBUIÇÃO 5% TERÇA"
+      ]
+    },
+    {
+      "id": "1c0eaa43-4b86-4489-aa30-ba7a0a62f73d",
+      "category_id": "d73988aa-8b0c-479c-a19f-3e068a1fd21e",
+      "name": "Combo 10 caixas · 10 litros cada",
+      "slug": "10-caixas-acai-labor-10-litros",
+      "description": "Aproveite nossa promoção especial, válida para pagamentos em dinheiro ou via Pix.",
+      "price": 1200,
+      "price_from": false,
+      "weight": null,
+      "quantity_label": null,
+      "serves": null,
+      "is_active": true,
+      "is_sold_out": false,
+      "is_featured": true,
+      "featured_order": 9,
+      "sort_order": 9,
+      "product_images": [
+        {
+          "id": "f8f81c07-8447-44f5-ac27-721f1728cc12",
+          "url": "/catalog/10-caixas-acai-labor-10-litros-155592bf240abc29c2f78ab7eece56d5.webp",
+          "sort_order": 0,
+          "is_primary": true
+        }
+      ],
+      "addon_groups": [],
+      "promotions": [
+        {
+          "id": "2538e691-2aac-489e-a4cb-94710d21bfda",
+          "title": "Preço do material fornecido",
+          "promo_price": 1100,
+          "discount_percent": null,
+          "starts_at": null,
+          "ends_at": null,
+          "is_active": true
+        }
+      ],
+      "source_categories": [
+        "Mais Pedidos"
+      ]
+    },
+    {
+      "id": "6fff264f-919d-4e2b-acb8-34b4ecc351ab",
+      "category_id": "6088f04d-5bae-442e-a8a3-b1e8c78b99eb",
+      "name": "Açaí no copo · 300 ml",
+      "slug": "acai-no-copo-300ml",
+      "description": "Experimente 300ml de açaí cremoso, onde o sabor intenso e natural traz uma explosão refrescante em cada colherada. Uma verdadeira delícia!",
+      "price": 7.99,
+      "price_from": false,
+      "weight": null,
+      "quantity_label": "300 ml",
+      "serves": null,
+      "is_active": true,
+      "is_sold_out": false,
+      "is_featured": true,
+      "featured_order": 0,
+      "sort_order": 10,
+      "product_images": [
+        {
+          "id": "f03ef606-15e6-4580-a040-4a7d5690f375",
+          "url": "/catalog/acai-no-copo-300ml-d0c9cc146d77d3eb8092ca4d6a5f9d55.webp",
+          "sort_order": 0,
+          "is_primary": true
+        }
+      ],
+      "addon_groups": [
+        {
+          "id": "af4da950-cceb-4905-a926-12201ba40dcd",
+          "title": "Complementos · demonstração",
+          "min_select": 0,
+          "max_select": 3,
+          "is_required": false,
+          "sort_order": 0,
+          "product_addons": [
+            {
+              "id": "817f8acb-1bd1-4cb3-a6d5-09792227bc3d",
+              "group_id": "af4da950-cceb-4905-a926-12201ba40dcd",
+              "name": "Banana",
+              "description": "Opção fictícia gratuita para testar a montagem",
+              "price": 0,
+              "is_active": true,
+              "sort_order": 0
+            },
+            {
+              "id": "830fdefa-f274-4679-ae41-06676ab6e296",
+              "group_id": "af4da950-cceb-4905-a926-12201ba40dcd",
+              "name": "Granola",
+              "description": "Opção fictícia gratuita para testar a montagem",
+              "price": 0,
+              "is_active": true,
+              "sort_order": 1
+            },
+            {
+              "id": "a48a70fb-2999-491d-a701-a7b6d0017860",
+              "group_id": "af4da950-cceb-4905-a926-12201ba40dcd",
+              "name": "Leite em pó",
+              "description": "Opção fictícia gratuita para testar a montagem",
+              "price": 0,
+              "is_active": true,
+              "sort_order": 2
+            }
+          ]
+        }
+      ],
+      "promotions": [
+        {
+          "id": "1a6ea87b-9fb2-417a-a4ca-c1e465da7556",
+          "title": "Preço do material fornecido",
+          "promo_price": 4.99,
+          "discount_percent": null,
+          "starts_at": null,
+          "ends_at": null,
+          "is_active": true
+        }
+      ],
+      "source_categories": [
+        "PROMOÇÕES RELAMPAGO!!"
+      ]
+    },
+    {
+      "id": "f7985ab6-6b4e-45d1-a1b8-769db033dc56",
+      "category_id": "6088f04d-5bae-442e-a8a3-b1e8c78b99eb",
+      "name": "Açaí no copo · 500 ml",
+      "slug": "acai-no-copo-500ml",
+      "description": "Experimente 500 ml de açaí cremoso, onde o sabor intenso e natural traz uma explosão refrescante em cada colherada. Uma verdadeira delícia!",
+      "price": 12,
+      "price_from": false,
+      "weight": null,
+      "quantity_label": "500 ml",
+      "serves": null,
+      "is_active": true,
+      "is_sold_out": false,
+      "is_featured": true,
+      "featured_order": 0,
+      "sort_order": 11,
+      "product_images": [
+        {
+          "id": "51090974-9a74-403f-a91e-df54061548d7",
+          "url": "/catalog/acai-no-copo-500ml-096aa6e77bf4fb001f8b70825c18bfb1.webp",
+          "sort_order": 0,
+          "is_primary": true
+        }
+      ],
+      "addon_groups": [
+        {
+          "id": "e2e72bb5-c1a0-41c1-a7ae-fa52efb80ebf",
+          "title": "Complementos · demonstração",
+          "min_select": 0,
+          "max_select": 3,
+          "is_required": false,
+          "sort_order": 0,
+          "product_addons": [
+            {
+              "id": "90eb89b9-6dcf-425f-a47a-21e5fa2ff72b",
+              "group_id": "e2e72bb5-c1a0-41c1-a7ae-fa52efb80ebf",
+              "name": "Banana",
+              "description": "Opção fictícia gratuita para testar a montagem",
+              "price": 0,
+              "is_active": true,
+              "sort_order": 0
+            },
+            {
+              "id": "8abc5544-2936-4d5b-af07-dc68329a5ab6",
+              "group_id": "e2e72bb5-c1a0-41c1-a7ae-fa52efb80ebf",
+              "name": "Granola",
+              "description": "Opção fictícia gratuita para testar a montagem",
+              "price": 0,
+              "is_active": true,
+              "sort_order": 1
+            },
+            {
+              "id": "8dbe8a3a-21db-43a0-a03c-4cd54da1c765",
+              "group_id": "e2e72bb5-c1a0-41c1-a7ae-fa52efb80ebf",
+              "name": "Leite em pó",
+              "description": "Opção fictícia gratuita para testar a montagem",
+              "price": 0,
+              "is_active": true,
+              "sort_order": 2
+            }
+          ]
+        }
+      ],
+      "promotions": [
+        {
+          "id": "a75273f0-1bee-486f-ad95-ba7669f5e8a7",
+          "title": "Preço do material fornecido",
+          "promo_price": 9.99,
+          "discount_percent": null,
+          "starts_at": null,
+          "ends_at": null,
+          "is_active": true
+        }
+      ],
+      "source_categories": [
+        "PROMOÇÕES RELAMPAGO!!"
+      ]
+    }
+  ],
+  "coupons": [
+    {
+      "code": "LABOR10",
+      "percent": 10,
+      "min_total": 10,
+      "is_active": true
+    }
+  ],
+  "orders": []
+}
+
+

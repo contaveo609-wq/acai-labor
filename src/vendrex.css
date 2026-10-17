@@ -1,0 +1,495 @@
+.labor-theme {
+  --primary: #53316b;
+  --gold: #c4de86;
+}
+.labor-logo .logo-symbol {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--primary);
+  color: #fff;
+  border-radius: 13px;
+}
+.labor-logo {
+  color: var(--primary);
+}
+.labor-logo small {
+  max-width: 210px;
+  white-space: normal;
+}
+.hero-cta,
+.header-cart,
+.assistant-toggle {
+  background: var(--primary);
+}
+.header-cart {
+  color: #fff;
+  border-color: transparent;
+}
+.header-cart small {
+  color: #eee2f4;
+}
+.header-cart > b {
+  background: var(--gold);
+  color: #263613;
+}
+.vendrex-hero {
+  max-width: 1180px;
+  margin: auto;
+  padding: 48px 28px 36px;
+  display: grid;
+  grid-template-columns: 1.05fr 1fr;
+  gap: 25px;
+  align-items: center;
+}
+.vendrex-hero-copy h1 {
+  font-size: clamp(46px, 5.8vw, 76px);
+  line-height: 1.03;
+  max-width: 570px;
+  margin: 23px 0;
+  color: var(--primary);
+  overflow-wrap: anywhere;
+}
+.vendrex-hero-copy > p {
+  font-size: 16px;
+  line-height: 1.85;
+  color: var(--muted-foreground);
+  max-width: 460px;
+  margin-bottom: 26px;
+}
+.vendrex-hero-details {
+  display: flex;
+  gap: 22px;
+  margin-top: 27px;
+  color: var(--muted-foreground);
+  font-size: 11px;
+  flex-wrap: wrap;
+}
+.vendrex-hero-details span {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.vendrex-hero-art {
+  position: relative;
+  min-width: 0;
+}
+.distribution-art {
+  width: 100%;
+  height: auto;
+  animation: delivery-float 7s ease-in-out infinite;
+}
+.vendrex-hero-art > img {
+  width: 100%;
+  max-height: 430px;
+  object-fit: cover;
+  border-radius: 30px;
+}
+.vendrex-art-label {
+  position: absolute;
+  right: 0;
+  bottom: 17px;
+  transform: rotate(-4deg);
+  background: var(--primary);
+  color: white;
+  padding: 18px 22px;
+  border-radius: 14px;
+  box-shadow: 0 12px 24px #30243818;
+}
+.vendrex-art-label span {
+  font-size: 8px;
+  letter-spacing: 0.1em;
+  color: var(--gold);
+}
+.vendrex-art-label b {
+  display: block;
+  font-size: 21px;
+  line-height: 1.2;
+  margin-top: 7px;
+  font-family: var(--font-display);
+}
+.vendrex-art-label svg {
+  display: inline;
+}
+.vendrex-benefits {
+  max-width: 1124px;
+  margin: 4px auto 45px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 24px 0;
+  gap: 20px;
+}
+.vendrex-benefits > div {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+.vendrex-benefits svg {
+  color: var(--primary);
+  width: 23px;
+  flex-shrink: 0;
+}
+.vendrex-benefits b {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+}
+.vendrex-benefits small {
+  color: var(--muted-foreground);
+  font-size: 10px;
+}
+.vendrex-bottom {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  max-width: 1124px;
+  margin: 40px auto 60px;
+  background: var(--primary);
+  color: #fff;
+  padding: 35px;
+  border-radius: 22px;
+}
+.vendrex-bottom > svg {
+  color: var(--gold);
+  flex-shrink: 0;
+}
+.vendrex-bottom h2 {
+  font-size: 28px;
+  margin: 8px 0;
+}
+.vendrex-bottom .eyebrow {
+  color: var(--gold);
+}
+.vendrex-bottom p {
+  color: #eee;
+  font-size: 12px;
+}
+.vendrex-bottom a {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  white-space: nowrap;
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--gold);
+}
+.catalog-filters {
+  display: flex;
+  align-items: end;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 0 0 17px;
+}
+.catalog-filters label {
+  font-size: 10px;
+  color: var(--muted-foreground);
+}
+.catalog-filters select {
+  display: block;
+  padding: 9px 26px 9px 10px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: white;
+  color: var(--foreground);
+  margin-top: 5px;
+  font-size: 12px;
+}
+.catalog-filters .filter-check {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  padding-bottom: 10px;
+}
+.sale-choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 20px;
+}
+.sale-choices legend {
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.sale-choices button {
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 12px;
+  text-align: left;
+}
+.sale-choices button[aria-pressed="true"] {
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 6%, white);
+}
+.sale-choices strong {
+  display: block;
+  color: var(--primary);
+  margin-top: 4px;
+}
+.product-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary);
+}
+.labor-admin-main {
+  min-width: 0;
+}
+.labor-admin-sidebar {
+  background: var(--primary);
+}
+.admin-kanban {
+  max-width: 100%;
+}
+.admin-table-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+}
+.vendrex-editor-section {
+  border-top: 1px solid var(--border);
+  padding-top: 20px;
+  margin: 20px 0;
+}
+.vendrex-editor-section h3 {
+  font-size: 18px;
+  margin-bottom: 8px;
+}
+.vendrex-editor-section > p {
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--muted-foreground);
+  margin-bottom: 17px;
+}
+.vendrex-option-editor {
+  margin-top: 14px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  background: var(--background);
+  border-radius: 12px;
+}
+.weekly-hours {
+  display: grid;
+  gap: 9px;
+}
+.weekly-hours > div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+}
+.weekly-hours label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 95px;
+  flex-shrink: 0;
+}
+.weekly-hours input[type="time"] {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 7px;
+  width: 110px;
+}
+.admin-form-grid input[type="checkbox"] {
+  width: auto;
+  margin-right: 6px;
+}
+.admin-form-grid input[type="color"] {
+  width: 100%;
+  height: 45px;
+  padding: 5px;
+}
+.financial-badge {
+  display: inline-block;
+  background: #fff4d8;
+  color: #77531a;
+  border: 1px solid #f0dbaa;
+  border-radius: 6px;
+  font-size: 10px;
+  padding: 4px 7px;
+  margin-top: 5px;
+}
+.order-filters {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 18px 0;
+}
+.order-filters input,
+.order-filters select,
+.order-cancel input,
+.order-history textarea {
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: #fff;
+  font-size: 12px;
+  max-width: 100%;
+}
+.order-history textarea {
+  display: block;
+  width: 100%;
+  margin: 10px 0;
+}
+.order-filters input:first-child {
+  flex: 1;
+  min-width: 200px;
+}
+.order-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 18px 0;
+}
+.order-cancel {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 15px;
+  border: 1px solid #f1d2d2;
+  border-radius: 12px;
+}
+.order-cancel label {
+  width: 100%;
+  font-size: 12px;
+}
+.order-cancel input {
+  flex: 1;
+  min-width: 130px;
+}
+.order-history {
+  margin-top: 22px;
+  border-top: 1px solid var(--border);
+  padding-top: 15px;
+}
+.order-history h3 {
+  font-size: 17px;
+}
+.order-history p {
+  font-size: 12px;
+  line-height: 1.6;
+  margin: 9px 0;
+  overflow-wrap: anywhere;
+}
+.order-receipt {
+  font-size: 12px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+.order-receipt h3 {
+  font-size: 20px;
+}
+.order-receipt p {
+  margin: 9px 0;
+}
+.order-receipt li {
+  padding: 9px 0;
+  border-bottom: 1px dashed var(--border);
+}
+.order-receipt li > span {
+  float: right;
+}
+.order-receipt small {
+  display: block;
+}
+#vendrex-receipt {
+  display: none;
+}
+@keyframes delivery-float {
+  50% {
+    transform: translateY(-7px) rotate(1deg);
+  }
+}
+@media (max-width: 700px) {
+  .vendrex-hero {
+    grid-template-columns: 1fr;
+    padding: 30px 20px 20px;
+    gap: 8px;
+  }
+  .vendrex-hero-copy h1 {
+    font-size: 49px;
+    max-width: 370px;
+  }
+  .vendrex-hero-copy > p {
+    font-size: 14px;
+  }
+  .vendrex-hero-art {
+    max-width: 380px;
+    width: 100%;
+    margin: auto;
+  }
+  .vendrex-art-label {
+    padding: 13px 16px;
+    bottom: 4px;
+    right: 3px;
+  }
+  .vendrex-art-label b {
+    font-size: 18px;
+  }
+  .vendrex-benefits {
+    margin: 0 20px 25px;
+    grid-template-columns: 1fr;
+    padding: 20px 0;
+    gap: 16px;
+  }
+  .vendrex-bottom {
+    margin: 30px 18px;
+    flex-wrap: wrap;
+    padding: 25px;
+    gap: 16px;
+  }
+  .vendrex-bottom h2 {
+    font-size: 25px;
+  }
+  .vendrex-bottom a {
+    margin-left: 0;
+  }
+  .catalog-filters {
+    gap: 10px;
+  }
+  .catalog-filters > label:not(.filter-check) {
+    flex: 1;
+  }
+  .catalog-filters select {
+    width: 100%;
+  }
+  .weekly-hours > div {
+    gap: 5px;
+  }
+  .weekly-hours input[type="time"] {
+    width: 90px;
+  }
+  .labor-header-inner {
+    gap: 8px;
+  }
+  .labor-logo small {
+    max-width: 150px;
+  }
+  .order-actions button {
+    width: 100%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .distribution-art {
+    animation: none;
+  }
+}
+@media print {
+  body > *:not(#vendrex-receipt) {
+    display: none !important;
+  }
+  #vendrex-receipt {
+    display: block !important;
+    padding: 10mm;
+    color: #000;
+    background: #fff;
+  }
+  .order-receipt {
+    font-family: Arial, sans-serif;
+    font-size: 11pt;
+  }
+}

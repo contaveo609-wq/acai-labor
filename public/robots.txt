@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /checkout
+Disallow: /carrinho
+Disallow: /pedido/
+Disallow: /minha-conta
+Disallow: /meus-pedidos
