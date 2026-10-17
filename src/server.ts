@@ -51,7 +51,8 @@ export default {
       process.env["LABOR_PUBLIC_BASE_URL"],
       process.env["VERCEL_URL"] ? `https://${process.env["VERCEL_URL"]}` : undefined,
     ].filter((value): value is string => Boolean(value)).map((value) => new URL(value).origin);
-    if (publicBases.length && !publicBases.includes(url.origin))
+    const isVercelHost = url.protocol === "https:" && url.hostname.endsWith(".vercel.app");
+    if (publicBases.length && !publicBases.includes(url.origin) && !isVercelHost)
       return new Response("Domínio não autorizado", { status: 421 });
     if (publicBases.length && url.protocol !== "https:")
       return new Response("HTTPS obrigatório", { status: 426 });
