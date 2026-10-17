@@ -47,7 +47,8 @@ function isH3SwallowedErrorBody(body: string): boolean {
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     const url = new URL(request.url);
-    const publicBase = process.env["LABOR_PUBLIC_BASE_URL"];
+    const publicBase = process.env["LABOR_PUBLIC_BASE_URL"] ||
+      (process.env["VERCEL_URL"] ? `https://${process.env["VERCEL_URL"]}` : undefined);
     if (publicBase && url.origin !== new URL(publicBase).origin)
       return new Response("Domínio não autorizado", { status: 421 });
     if (publicBase && url.protocol !== "https:")

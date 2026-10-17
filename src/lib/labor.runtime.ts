@@ -1,6 +1,7 @@
 export function assertLaborRequest(request: Request) {
   const url = new URL(request.url);
-  const publicBase = process.env["LABOR_PUBLIC_BASE_URL"];
+  const publicBase = process.env["LABOR_PUBLIC_BASE_URL"] ||
+    (process.env["VERCEL_URL"] ? `https://${process.env["VERCEL_URL"]}` : undefined);
   if (publicBase) {
     if (url.origin !== new URL(publicBase).origin || url.protocol !== "https:")
       throw new Error("Configure o domínio HTTPS da loja antes de publicar.");
