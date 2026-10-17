@@ -31,7 +31,10 @@ import {
 
 const clone = <T>(v: T): T => structuredClone(v);
 export function createLaborService(
-  directory = resolve(process.env["DEMO_DATA_DIR"] || ".local/labor"),
+  directory = resolve(
+    process.env["DEMO_DATA_DIR"] ||
+      (process.env["VERCEL"] ? "/tmp/acai-labor" : ".local/labor"),
+  ),
   initialCatalog: LaborDatabase = seed as unknown as LaborDatabase,
   storeId = process.env["LABOR_STORE_ID"] || "acai-labor",
 ) {
