@@ -3154,17 +3154,7 @@
         }
       ],
       "addon_groups": [],
-      "promotions": [
-        {
-          "id": "401c18d6-6f08-4955-a302-d712d5fd94c7",
-          "title": "Preço do catálogo público",
-          "promo_price": 109.9,
-          "discount_percent": null,
-          "starts_at": null,
-          "ends_at": null,
-          "is_active": true
-        }
-      ],
+  "promotions": [],
       "source_categories": [
         "SUPER COMBO LABOR"
       ]

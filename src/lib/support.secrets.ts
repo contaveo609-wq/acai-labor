@@ -4,9 +4,11 @@ import { readFile, mkdir, rename, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { createCipheriv, createDecipheriv, randomBytes, randomUUID } from "node:crypto";
 
+let dpapiQueue: Promise<unknown> = Promise.resolve();
+
 function dpapi(value: string, decrypt: boolean, purpose: string): Promise<string> {
   const script = `Add-Type -AssemblyName System.Security; $payload = [Console]::In.ReadToEnd(); $bytes = [Convert]::FromBase64String($payload); $result = [Security.Cryptography.ProtectedData]::${decrypt ? "Unprotect" : "Protect"}($bytes, [Text.Encoding]::UTF8.GetBytes('acai-labor-${purpose}-v1'), [Security.Cryptography.DataProtectionScope]::CurrentUser); [Console]::Out.Write([Convert]::ToBase64String($result))`;
-  return new Promise((resolve, reject) => {
+  const work = () => new Promise<string>((resolve, reject) => {
     const child = execFile(
       "powershell.exe",
       ["-NoProfile", "-NonInteractive", "-Command", script],
@@ -18,6 +20,9 @@ function dpapi(value: string, decrypt: boolean, purpose: string): Promise<string
     );
     child.stdin!.end(value);
   });
+  const result = dpapiQueue.then(work);
+  dpapiQueue = result.catch(() => {});
+  return result;
 }
 function masterKey() {
   const key = Buffer.from(process.env["LABOR_SECRET_KEY"] || "", "base64");
@@ -63,7 +68,11 @@ export function createSupportVault(directory: string, purpose = "gemini") {
     },
     async replace(key: string) {
       let record: { kind: string; data: string; iv?: string; tag?: string };
-      if (process.platform === "win32")
+      // A configured server key takes precedence even on Windows. This keeps
+      // deploys portable and lets automated processes use AES-GCM without an
+      // interactive Windows profile, while local Windows installs still use
+      // DPAPI by default.
+      if (process.platform === "win32" && !process.env["LABOR_SECRET_KEY"])
         record = {
           kind: "dpapi",
           data: await dpapi(Buffer.from(key).toString("base64"), false, purpose),

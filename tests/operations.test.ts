@@ -16,6 +16,10 @@ import {
 import { couponSchema } from "../src/lib/coupons";
 import type { LedgerEntry } from "../src/lib/operations.types";
 import seed from "./fixtures/labor-catalog-v1.json";
+
+// CI has no interactive Windows profile for DPAPI. The production default on
+// Windows remains DPAPI; the test suite exercises the server-key AES-GCM path.
+process.env["LABOR_SECRET_KEY"] ??= Buffer.alloc(32, 9).toString("base64");
 async function fixture(t: Parameters<Parameters<typeof test>[1]>[0]) {
   const directory = await mkdtemp(join(tmpdir(), "labor-operations-"));
   t.after(async () => {
@@ -71,10 +75,10 @@ test("login exige segundo fator após cadastro e rejeita código repetido", asyn
   h.service.logout(h.token);
   assert.equal((await h.service.session()).mfaRequired, true);
   await assert.rejects(h.service.login("Operations-test#2026", false, "mfa-login"), /Informe o código/);
-  const nextCode = totp(enrollment.secret, Date.now() + 30000);
-  const token = await h.service.login("Operations-test#2026", false, "mfa-login", nextCode);
+  const loginRecoveryCode = recovery.recoveryCodes[1]!;
+  const token = await h.service.login("Operations-test#2026", false, "mfa-login", loginRecoveryCode);
   assert.equal((await h.service.session(token)).authenticated, true);
-  await assert.rejects(h.service.login("Operations-test#2026", false, "mfa-login", nextCode), /já utilizado/);
+  await assert.rejects(h.service.login("Operations-test#2026", false, "mfa-login", loginRecoveryCode), /já utilizado/);
   const restored = await h.service.login("Operations-test#2026", false, "mfa-login", recovery.recoveryCodes[0]!);
   assert.equal((await h.service.session(restored)).authenticated, true);
   await assert.rejects(h.service.login("Operations-test#2026", false, "mfa-login", recovery.recoveryCodes[0]!), /já utilizado/);

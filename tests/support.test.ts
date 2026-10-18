@@ -12,6 +12,10 @@ import { DEFAULT_SUPPORT, type SupportDecision } from "../src/lib/support.types"
 import type { LaborDatabase } from "../src/lib/labor.types";
 import seed from "../src/data/labor-catalog.json";
 
+// CI has no interactive Windows profile for DPAPI. The production default on
+// Windows remains DPAPI; the test suite exercises the server-key AES-GCM path.
+process.env["LABOR_SECRET_KEY"] ??= Buffer.alloc(32, 7).toString("base64");
+
 const decision = (patch: Partial<SupportDecision> = {}): SupportDecision => ({
   action: "products",
   query: "",
@@ -358,8 +362,6 @@ test("adaptador Gemini usa cabeçalho secreto, paginação, DTO e valida saída"
 test("cofre guarda chave cifrada e painel não devolve segredo", async (t) => {
   const h = await harness(t);
   const fakeKey = "example-only-never-a-real-api-key-12345";
-  if (process.platform !== "win32")
-    process.env["LABOR_SECRET_KEY"] = Buffer.alloc(32, 7).toString("base64");
   await h.service.replaceKey("admin", fakeKey);
   const raw = await readFile(join(h.directory, "gemini-secret.json"), "utf8");
   assert.ok(!raw.includes(fakeKey));

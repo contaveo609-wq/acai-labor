@@ -86,7 +86,12 @@ export function createSecurityService(
         until: Date.now() + 900000,
       });
       if (!code) throw new Error("Informe o código do autenticador ou um código de recuperação.");
-      const secret = await vault.get();
+      // Recovery codes are stored as hashes in the database and can be
+      // validated without opening the TOTP secret vault. Besides being less
+      // work, this keeps emergency recovery available if the local vault is
+      // temporarily unavailable.
+      const recoveryCandidate = (await deps.read()).security?.recoveryHashes.includes(hash(code)) === true;
+      const secret = recoveryCandidate ? "" : await vault.get();
       const accepted = await deps.mutate((db) => {
         const state = db.security;
         if (!state?.enabled) return false;
@@ -141,7 +146,9 @@ export function createSecurityService(
         count: failed && failed.until > Date.now() ? failed.count + 1 : 1,
         until: Date.now() + 900000,
       });
-      const secret = await (enrollment ? pending : vault).get();
+      const recoveryCandidate =
+        !enrollment && (await deps.read()).security?.recoveryHashes.includes(hash(code)) === true;
+      const secret = recoveryCandidate ? "" : await (enrollment ? pending : vault).get();
       const recoveryCodes = Array.from({ length: 8 }, () => randomBytes(9).toString("hex"));
       const ok = await deps.mutate(async (db) => {
         const s = db.security;
