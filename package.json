@@ -7,7 +7,7 @@
     "dev": "vite dev --host 127.0.0.1 --port 5173",
     "start": "node scripts/start-local.mjs",
     "typecheck": "tsc --noEmit",
-    "test": "node --import tsx --test --test-concurrency=1 tests/labor.test.ts tests/vendrex.test.ts tests/rls.test.ts tests/support.test.ts tests/whatsapp.test.ts tests/operations.test.ts tests/release.test.ts tests/platform-matrix.test.ts",
+    "test": "node --import tsx --test --test-concurrency=1 tests/labor.test.ts tests/vendrex.test.ts tests/rls.test.ts tests/support.test.ts tests/whatsapp.test.ts tests/operations.test.ts tests/release.test.ts tests/platform-matrix.test.ts tests/ads.test.ts",
     "test:ui": "node tests/ui.mjs",
     "import:catalog": "node scripts/import-catalog.mjs",
     "build": "vite build",

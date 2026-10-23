@@ -5,6 +5,7 @@ import { Chatbot } from "@/components/Chatbot";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { DEMO_MODE } from "@/lib/demo";
 import { LaborAssistant } from "./LaborAssistant";
+import { MarketingConsent } from "./MarketingConsent";
 
 export function SiteShell({
   children,
@@ -20,6 +21,7 @@ export function SiteShell({
       <SiteHeader search={search} onSearchChange={onSearchChange} />
       <main className="flex-1">{children}</main>
       <SiteFooter />
+      {DEMO_MODE && <MarketingConsent />}
       {DEMO_MODE ? (
         <LaborAssistant />
       ) : (

@@ -1,0 +1,172 @@
+.ads-center {
+  display: grid;
+  gap: 20px;
+  min-width: 0;
+  color: var(--foreground);
+}
+.ads-center > header {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  align-items: center;
+}
+.ads-center h2 {
+  font-size: 1.7rem;
+  font-weight: 750;
+  color: #60317b;
+}
+.ads-center h3 {
+  font-size: 1.2rem;
+  font-weight: 650;
+}
+.ads-center p,
+.ads-center small {
+  color: #716779;
+}
+.ads-center nav {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.ads-center nav button,
+.ads-pill {
+  border: 1px solid #dfd3e8;
+  border-radius: 20px;
+  padding: 8px 14px;
+  font-size: 0.85rem;
+}
+.ads-center nav button[aria-current] {
+  background: #683888;
+  color: white;
+}
+.ads-notice {
+  background: #faf3e4;
+  border-radius: 12px;
+  padding: 14px;
+}
+.ads-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: end;
+}
+.ads-center label {
+  display: grid;
+  gap: 6px;
+  font-size: 0.9rem;
+}
+.ads-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 12px;
+}
+.ads-metrics article {
+  display: grid;
+  gap: 8px;
+  background: white;
+  border: 1px solid #e5ddeb;
+  border-radius: 16px;
+  padding: 18px;
+}
+.ads-metrics strong {
+  font-size: 1.6rem;
+}
+.ads-empty {
+  padding: 45px 24px;
+  text-align: center;
+  border: 1px dashed #bca8ca;
+  border-radius: 16px;
+}
+.ads-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  border: 1px solid #e5ddeb;
+  border-radius: 12px;
+  padding: 18px;
+  align-items: center;
+  background: white;
+}
+.ads-row > div {
+  flex: 1;
+  min-width: 180px;
+}
+.ads-row h4 {
+  font-weight: 650;
+}
+.ads-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 18px;
+}
+.ads-form h3,
+.ads-form > p {
+  grid-column: 1/-1;
+}
+.ads-center select {
+  max-width: 100%;
+  width: 100%;
+  min-height: 38px;
+  background: white;
+  border: 1px solid #dfd3e8;
+  padding: 6px;
+  border-radius: 8px;
+}
+.ads-center fieldset label {
+  display: flex;
+  gap: 8px;
+  margin: 8px;
+}
+.ads-scroll {
+  overflow: auto;
+}
+.ads-center table {
+  width: 100%;
+  text-align: left;
+}
+.ads-center th,
+.ads-center td {
+  padding: 12px;
+  border-bottom: 1px solid #eee;
+}
+.ads-confirm {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: #21122b80;
+  z-index: 100;
+  padding: 20px;
+}
+.ads-confirm > div {
+  max-width: 520px;
+  background: white;
+  padding: 28px;
+  border-radius: 18px;
+}
+.ads-confirm p {
+  margin: 18px 0;
+}
+@media (max-width: 650px) {
+  .ads-center > header {
+    align-items: start;
+    flex-direction: column;
+  }
+  .ads-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media print {
+  .ads-center nav,
+  .ads-filters,
+  .ads-center button,
+  .ads-notice {
+    display: none !important;
+  }
+  .ads-metrics article {
+    break-inside: avoid;
+  }
+  .ads-scroll {
+    overflow: visible;
+  }
+}

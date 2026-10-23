@@ -24,6 +24,10 @@ export function ProductDialog({
   editingItem?: CartItem | null;
 }) {
   const { addItem, removeItem } = useCart();
+  useEffect(() => {
+    if (open && product)
+      void import("@/lib/ads.tracking").then((m) => m.trackAdEvent("ViewContent", product.id));
+  }, [open, product?.id]);
   const [quantity, setQuantity] = useState(1);
   const [notes, setNotes] = useState("");
   const [selected, setSelected] = useState<Record<string, number>>({});
@@ -305,7 +309,10 @@ export function ProductDialog({
               variant="ghost"
               aria-label="Aumentar quantidade"
               className="h-8 w-8"
-              disabled={quantity + (sale?.quantity_step || 1) > 1000 || (remaining !== undefined && quantity + (sale?.quantity_step || 1) > remaining)}
+              disabled={
+                quantity + (sale?.quantity_step || 1) > 1000 ||
+                (remaining !== undefined && quantity + (sale?.quantity_step || 1) > remaining)
+              }
               onClick={() =>
                 setQuantity((q) => Math.round((q + (sale?.quantity_step || 1)) * 1000) / 1000)
               }
@@ -323,7 +330,7 @@ export function ProductDialog({
               ? "Esgotado"
               : remaining !== undefined && quantity > remaining
                 ? "Quantidade indisponível"
-              : `${editingItem ? "Salvar alterações" : "Adicionar"} • ${formatBRL(total)}`}
+                : `${editingItem ? "Salvar alterações" : "Adicionar"} • ${formatBRL(total)}`}
           </Button>
         </div>
       </DialogContent>

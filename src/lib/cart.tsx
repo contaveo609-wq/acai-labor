@@ -90,6 +90,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       count: items.reduce((sum, i) => sum + i.quantity, 0),
       subtotal,
       addItem: (item) => {
+        void import("./ads.tracking").then(m => m.trackAdEvent("AddToCart", item.productId));
         const signature = `${item.productId}|${item.saleOptionId || "base"}|${item.notes}|${item.addons
           .map((a) => `${a.id}x${a.quantity}`)
           .sort()

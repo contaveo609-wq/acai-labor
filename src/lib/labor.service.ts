@@ -10,7 +10,15 @@ import { createWhatsAppService } from "./whatsapp.service";
 import { createOperationsService, normalizePhone } from "./operations.service";
 import { createPushService } from "./push.service";
 import { createSupportVault } from "./support.secrets";
-import { stockSchema, stockFor, productUnavailable, ensureStock, reserveStock, restoreStock } from "./inventory";
+import { createAdsService } from "./ads.service";
+import {
+  stockSchema,
+  stockFor,
+  productUnavailable,
+  ensureStock,
+  reserveStock,
+  restoreStock,
+} from "./inventory";
 import { driverSchema, assignmentSchema } from "./delivery";
 import { couponSchema, couponDiscount } from "./coupons";
 import {
@@ -32,8 +40,7 @@ import {
 const clone = <T>(v: T): T => structuredClone(v);
 export function createLaborService(
   directory = resolve(
-    process.env["DEMO_DATA_DIR"] ||
-      (process.env["VERCEL"] ? "/tmp/acai-labor" : ".local/labor"),
+    process.env["DEMO_DATA_DIR"] || (process.env["VERCEL"] ? "/tmp/acai-labor" : ".local/labor"),
   ),
   initialCatalog: LaborDatabase = seed as unknown as LaborDatabase,
   storeId = process.env["LABOR_STORE_ID"] || "acai-labor",
@@ -41,27 +48,32 @@ export function createLaborService(
   let queue: Promise<unknown> = Promise.resolve();
   const sessions = new Map<string, number>();
   const attempts = new Map<string, { count: number; until: number }>();
-  const encryptedData = process.env["LABOR_ENCRYPT_DATA"] === "1" ? createSupportVault(directory, "database") : null;
+  const encryptedData =
+    process.env["LABOR_ENCRYPT_DATA"] === "1" ? createSupportVault(directory, "database") : null;
   let encryptedCache: LaborDatabase | undefined;
   let encryptedLoad: Promise<LaborDatabase> | undefined;
   async function read(): Promise<LaborDatabase> {
     if (encryptedData && encryptedCache) return clone(encryptedCache);
     if (encryptedData) {
-      encryptedLoad ??= load().then((db) => {
-        encryptedCache = clone(db);
-        return db;
-      }).catch((error) => {
-        encryptedLoad = undefined;
-        throw error;
-      });
+      encryptedLoad ??= load()
+        .then((db) => {
+          encryptedCache = clone(db);
+          return db;
+        })
+        .catch((error) => {
+          encryptedLoad = undefined;
+          throw error;
+        });
       return clone(await encryptedLoad);
     }
     return load();
   }
   async function load(): Promise<LaborDatabase> {
     try {
-      const encrypted = encryptedData && await encryptedData.get();
-      const db = migrateV2(JSON.parse(encrypted || await readFile(join(directory, "data.json"), "utf8")));
+      const encrypted = encryptedData && (await encryptedData.get());
+      const db = migrateV2(
+        JSON.parse(encrypted || (await readFile(join(directory, "data.json"), "utf8"))),
+      );
       if ((db.store_id || "acai-labor") !== storeId)
         throw new Error("Pasta pertence a outro estabelecimento.");
       db.store_id = storeId;
@@ -71,7 +83,8 @@ export function createLaborService(
       }
       return db;
     } catch (e) {
-      if ((e as NodeJS.ErrnoException).code === "ENOENT") return {...migrateV2(clone(initialCatalog)),store_id:storeId};
+      if ((e as NodeJS.ErrnoException).code === "ENOENT")
+        return { ...migrateV2(clone(initialCatalog)), store_id: storeId };
       throw e;
     }
   }
@@ -137,6 +150,7 @@ export function createLaborService(
       throw new Error("Senha incorreta.");
   });
   const support = createSupportService({ ...base, requireSensitive: security.requireSensitive });
+  const ads = createAdsService({ ...base, requireSensitive: security.requireSensitive });
   let orderPort: (
     raw: unknown,
     owner: string,
@@ -153,6 +167,7 @@ export function createLaborService(
   });
   const push = createPushService(directory);
   const service = {
+    ads,
     security,
     support,
     whatsapp,
@@ -165,9 +180,19 @@ export function createLaborService(
         categories: db.categories
           .filter((c) => c.is_active)
           .sort((a, b) => a.sort_order - b.sort_order),
-        products: db.products.filter(
-          (p) => p.is_active && db.categories.some((c) => c.id === p.category_id && c.is_active),
-        ).map((p) => ({ ...p, is_sold_out: productUnavailable(db, p), stock: Object.fromEntries((db.inventory || []).filter((item) => item.productId === p.id).map((item) => [item.saleOptionId || "base", item.quantity])) })),
+        products: db.products
+          .filter(
+            (p) => p.is_active && db.categories.some((c) => c.id === p.category_id && c.is_active),
+          )
+          .map((p) => ({
+            ...p,
+            is_sold_out: productUnavailable(db, p),
+            stock: Object.fromEntries(
+              (db.inventory || [])
+                .filter((item) => item.productId === p.id)
+                .map((item) => [item.saleOptionId || "base", item.quantity]),
+            ),
+          })),
         coupons: db.coupons.map((c) => ({
           ...c,
           code: c.code,
@@ -178,7 +203,11 @@ export function createLaborService(
       };
     },
     async session(token?: string) {
-      return { authenticated: authorized(token), needsSetup: !(await passwordRecord()), mfaRequired: await security.loginRequired() };
+      return {
+        authenticated: authorized(token),
+        needsSetup: !(await passwordRecord()),
+        mfaRequired: await security.loginRequired(),
+      };
     },
     async login(password: string, setup: boolean, client = "local", code?: string) {
       const failed = attempts.get(client);
@@ -262,15 +291,32 @@ export function createLaborService(
       const value = stockSchema.parse(input);
       return mutate((db) => {
         const product = db.products.find((item) => item.id === value.productId);
-        if (!product || (value.saleOptionId && !(product.sale_options || []).some((item) => item.id === value.saleOptionId)))
+        if (
+          !product ||
+          (value.saleOptionId &&
+            !(product.sale_options || []).some((item) => item.id === value.saleOptionId))
+        )
           throw new Error("Produto ou embalagem inexistente.");
         const at = new Date().toISOString();
         let record = stockFor(db, value.productId, value.saleOptionId);
         const delta = value.quantity - (record?.quantity || 0);
-        if (record) Object.assign(record, { quantity: value.quantity, lowAt: value.lowAt, updatedAt: at });
+        if (record)
+          Object.assign(record, { quantity: value.quantity, lowAt: value.lowAt, updatedAt: at });
         else (db.inventory ??= []).push((record = { ...value, updatedAt: at }));
-        (db.stockMovements ??= []).push({ id: randomUUID(), at, productId: value.productId, saleOptionId: value.saleOptionId, delta, reason: "ajuste" });
-        audit(db, "estoque.ajustado", value.productId, `${value.saleOptionId || "base"}: ${value.quantity}`);
+        (db.stockMovements ??= []).push({
+          id: randomUUID(),
+          at,
+          productId: value.productId,
+          saleOptionId: value.saleOptionId,
+          delta,
+          reason: "ajuste",
+        });
+        audit(
+          db,
+          "estoque.ajustado",
+          value.productId,
+          `${value.saleOptionId || "base"}: ${value.quantity}`,
+        );
         return record;
       });
     },
@@ -281,7 +327,12 @@ export function createLaborService(
         const index = (db.drivers || []).findIndex((item) => item.id === driver.id);
         if (index < 0) (db.drivers ??= []).push(driver);
         else db.drivers![index] = driver;
-        audit(db, "entregador.salvo", driver.id, `${driver.name}; ${driver.active ? "ativo" : "inativo"}`);
+        audit(
+          db,
+          "entregador.salvo",
+          driver.id,
+          `${driver.name}; ${driver.active ? "ativo" : "inativo"}`,
+        );
         return driver;
       });
     },
@@ -291,13 +342,32 @@ export function createLaborService(
       return mutate((db) => {
         const order = db.orders.find((item) => item.id === value.orderId);
         const driver = db.drivers?.find((item) => item.id === value.driverId && item.active);
-        if (!order || order.fulfillment !== "delivery" || !["pronto", "saiu_entrega"].includes(order.status))
+        if (
+          !order ||
+          order.fulfillment !== "delivery" ||
+          !["pronto", "saiu_entrega"].includes(order.status)
+        )
           throw new Error("Escolha um pedido de entrega pronto ou em rota.");
         if (!driver) throw new Error("Entregador ativo não encontrado.");
         let assignment = db.driverAssignments?.find((item) => item.orderId === order.id);
         if (assignment?.deliveredAt) throw new Error("Entrega já concluída.");
-        if (assignment) Object.assign(assignment, { driverId: driver.id, assignedAt: new Date().toISOString(), feePerDelivery: driver.feePerDelivery, dailyFee: driver.dailyFee });
-        else (db.driverAssignments ??= []).push((assignment = { orderId: order.id, driverId: driver.id, assignedAt: new Date().toISOString(), feePerDelivery: driver.feePerDelivery, dailyFee: driver.dailyFee }));
+        if (assignment)
+          Object.assign(assignment, {
+            driverId: driver.id,
+            assignedAt: new Date().toISOString(),
+            feePerDelivery: driver.feePerDelivery,
+            dailyFee: driver.dailyFee,
+          });
+        else
+          (db.driverAssignments ??= []).push(
+            (assignment = {
+              orderId: order.id,
+              driverId: driver.id,
+              assignedAt: new Date().toISOString(),
+              feePerDelivery: driver.feePerDelivery,
+              dailyFee: driver.dailyFee,
+            }),
+          );
         audit(db, "entrega.atribuida", order.id, driver.name);
         return assignment;
       });
@@ -546,6 +616,7 @@ export function createLaborService(
           coupon_code: input.coupon?.trim().toUpperCase() || "",
           scheduled_for: input.scheduled_for || null,
           source: options.source || "site",
+          attribution: input.attribution,
           internal_notes: [],
           customer_name: input.customer_name,
           customer_phone: input.customer_phone,
@@ -574,10 +645,21 @@ export function createLaborService(
         reserveStock(db, order, stockNeeded);
         for (const [stock] of stockNeeded)
           if (stock.quantity <= stock.lowAt)
-            audit(db, "estoque.baixo", stock.productId, `${stock.saleOptionId || "base"}: ${stock.quantity}`);
+            audit(
+              db,
+              "estoque.baixo",
+              stock.productId,
+              `${stock.saleOptionId || "base"}: ${stock.quantity}`,
+            );
         createdOrder = order;
         for (const cart of db.operations?.carts || [])
-          if (!cart.converted && (cart.ownerHash === hash(owner) || (options.source === "whatsapp" && cart.verified && cart.phone === normalizePhone(input.customer_phone)))) {
+          if (
+            !cart.converted &&
+            (cart.ownerHash === hash(owner) ||
+              (options.source === "whatsapp" &&
+                cart.verified &&
+                cart.phone === normalizePhone(input.customer_phone)))
+          ) {
             cart.converted = true;
             const campaign = db.operations?.campaigns.find((c) => c.id === cart.id);
             if (campaign) campaign.state = "paused";

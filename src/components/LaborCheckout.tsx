@@ -110,6 +110,7 @@ export function LaborCheckout() {
             : null,
         coupon: applied,
         expected_total: total,
+        attribution: (await import("@/lib/ads.tracking")).campaignOrigin(),
         request_id: requestId.current,
         items: items.map((i) => ({
           product_id: i.productId,

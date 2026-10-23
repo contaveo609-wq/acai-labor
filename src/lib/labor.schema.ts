@@ -223,6 +223,22 @@ export const laborOrderSchema = z
     coupon: z.string().max(30).optional(),
     request_id: z.string().uuid(),
     expected_total: z.number().finite().min(0).optional(),
+    attribution: z
+      .object({
+        campaign: z
+          .string()
+          .regex(/^[\w.-]{1,120}$/)
+          .optional(),
+        source: z
+          .string()
+          .regex(/^[\w.-]{1,120}$/)
+          .optional(),
+        medium: z
+          .string()
+          .regex(/^[\w.-]{1,120}$/)
+          .optional(),
+      })
+      .optional(),
     items: z
       .array(
         z.object({

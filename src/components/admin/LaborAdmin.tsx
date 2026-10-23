@@ -47,6 +47,7 @@ import { VendrexOrders } from "./VendrexOrders";
 import { LaborSupportInbox, LaborSupportSettings } from "./LaborSupport";
 import { LaborWhatsApp } from "./LaborWhatsApp";
 import { LaborOperations } from "./LaborOperations";
+import { LaborAds } from "./LaborAds";
 import { LaborCoupons } from "./LaborCoupons";
 import { NotificationSignal } from "./NotificationSignal";
 import { LaborStock } from "./LaborStock";
@@ -233,12 +234,12 @@ export function LaborAdmin() {
             {tab === "chatbot" && <LaborSupportSettings />}
             {tab === "whatsapp" && <LaborWhatsApp />}
             {(tab === "clientes" ||
-              tab === "campanhas" ||
               tab === "fidelidade" ||
               tab === "automacoes" ||
               tab === "relatorios" ||
               tab === "notificacoes" ||
               tab === "integracoes") && <LaborOperations key={tab} tab={tab} />}
+            {tab === "campanhas" && <LaborAds />}
             {tab === "auditoria" && (
               <section className="admin-box">
                 <h3>Registro de alterações</h3>

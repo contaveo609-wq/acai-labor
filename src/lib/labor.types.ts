@@ -20,6 +20,9 @@ export type Coupon = {
   product_ids?: string[];
 };
 export type LaborOrder = {
+  attribution?:
+    | { campaign?: string | undefined; source?: string | undefined; medium?: string | undefined }
+    | undefined;
   coupon_code?: string;
   id: string;
   order_number: number;
@@ -68,6 +71,7 @@ export type AuditEvent = {
   detail: string;
 };
 export type LaborDatabase = {
+  ads?: import("./ads.types").AdsState;
   drivers?: DeliveryDriver[];
   driverAssignments?: DeliveryAssignment[];
   inventory?: StockRecord[];

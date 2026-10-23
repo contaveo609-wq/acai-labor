@@ -100,10 +100,12 @@ try {
     assert.equal(manifest.short_name, "Açaí Labor");
     assert.equal(manifest.display, "standalone");
     assert.equal((await fetch(`${base}/icon-512.png`)).status, 200);
-    const worker = await page.evaluate(() => Promise.race([
-      navigator.serviceWorker.ready.then((registration) => registration.active?.scriptURL || ""),
-      new Promise((resolve) => setTimeout(() => resolve(""), 5000)),
-    ]));
+    const worker = await page.evaluate(() =>
+      Promise.race([
+        navigator.serviceWorker.ready.then((registration) => registration.active?.scriptURL || ""),
+        new Promise((resolve) => setTimeout(() => resolve(""), 5000)),
+      ]),
+    );
     assert.ok(String(worker).endsWith("/sw.js"));
     const source = await (await fetch(`${base}/sw.js`)).text();
     assert.ok(!source.includes("cache.put('/admin"));
@@ -159,9 +161,13 @@ try {
     await panel.getByLabel("Confirme a senha").fill("QA-Only-local#2026");
     await panel.getByRole("button", { name: "Configurar e entrar" }).click();
     await expect(panel.getByText("Recebimentos confirmados", { exact: true })).toBeVisible();
-    await expect(panel.getByRole("button", { name: "Receber pedidos neste aparelho" })).toBeVisible();
+    await expect(
+      panel.getByRole("button", { name: "Receber pedidos neste aparelho" }),
+    ).toBeVisible();
     await panel.getByRole("button", { name: "Conversas WhatsApp" }).click();
-    await expect(panel.getByText("Mensagens recebidas no WhatsApp aparecerão aqui após configurar o webhook.")).toBeVisible();
+    await expect(
+      panel.getByText("Mensagens recebidas no WhatsApp aparecerão aqui após configurar o webhook."),
+    ).toBeVisible();
     await panel.getByRole("button", { name: "Produtos", exact: true }).click();
     await panel.getByLabel("Buscar produto no painel").fill("500");
     await panel.getByRole("button", { name: "Editar", exact: true }).click();
@@ -326,7 +332,7 @@ try {
     watch(operation);
     for (const [route, label] of [
       ["clientes", "Histórico da loja"],
-      ["campanhas", "Somente contatos com autorização"],
+      ["campanhas", "Central de tráfego pago"],
       ["fidelidade", "Histórico da loja"],
       ["automacoes", "Recuperação de carrinhos"],
       ["relatorios", "Receita real paga"],
@@ -346,15 +352,52 @@ try {
     for (const route of ["clientes", "whatsapp", "relatorios"]) {
       await operation.goto(`${base}/admin/${route}`);
       await expect(operation.locator(".labor-admin-main")).toBeVisible();
-      const fits=await operation.evaluate(() => document.documentElement.scrollWidth <= innerWidth);
-      if(!fits){await operation.screenshot({path:resolve(output,`overflow-${route}.png`),fullPage:false});console.error(await operation.evaluate(()=>Array.from(document.querySelectorAll("body *")).filter(el=>el.getBoundingClientRect().right>innerWidth+1&&getComputedStyle(el).position!=="fixed").slice(0,15).map(el=>({tag:el.tagName,class:el.className,width:el.getBoundingClientRect().width}))));}
-      assert.ok(fits,`Overflow mobile admin ${route}`);
+      const fits = await operation.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      );
+      if (!fits) {
+        await operation.screenshot({
+          path: resolve(output, `overflow-${route}.png`),
+          fullPage: false,
+        });
+        console.error(
+          await operation.evaluate(() =>
+            Array.from(document.querySelectorAll("body *"))
+              .filter(
+                (el) =>
+                  el.getBoundingClientRect().right > innerWidth + 1 &&
+                  getComputedStyle(el).position !== "fixed",
+              )
+              .slice(0, 15)
+              .map((el) => ({
+                tag: el.tagName,
+                class: el.className,
+                width: el.getBoundingClientRect().width,
+              })),
+          ),
+        );
+      }
+      assert.ok(fits, `Overflow mobile admin ${route}`);
       await operation.screenshot({
         path: resolve(output, `admin-${route}-mobile.png`),
         fullPage: false,
       });
     }
     await operation.close();
+  });
+  await pass("tráfego pago: rascunho real e campanhas WhatsApp preservadas", async () => {
+    await panel.goto(`${base}/admin/campanhas`);
+    await expect(panel.getByRole("heading", { name: "Central de tráfego pago" })).toBeVisible();
+    await panel.getByRole("button", { name: "Criar campanha", exact: true }).click();
+    await panel.getByLabel("Nome", { exact: true }).fill("Campanha QA sem envio Meta");
+    await panel.getByLabel("Produto", { exact: true }).selectOption(cup.id);
+    await panel.getByRole("button", { name: "Salvar rascunho", exact: true }).click();
+    await expect(panel.getByText("Operação concluída.", { exact: true })).toBeVisible();
+    await panel.getByRole("button", { name: "Minhas campanhas", exact: true }).click();
+    await expect(panel.getByRole("heading", { name: "Campanha QA sem envio Meta" })).toBeVisible();
+    await panel.screenshot({ path: resolve(output, "trafego-pago.png"), fullPage: true });
+    await panel.getByRole("button", { name: "Campanhas WhatsApp", exact: true }).click();
+    await expect(panel.getByText(/Somente contatos com autorização/)).toBeVisible();
   });
   await pass("webhook sem credenciais rejeita eventos", async () => {
     assert.equal(
