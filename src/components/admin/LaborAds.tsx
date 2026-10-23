@@ -18,7 +18,6 @@ import {
   adsSave,
   adsPublish,
   adsChange,
-  adsSuggest,
   adsPrepare,
   adsDispatch,
 } from "@/lib/ads.functions";
@@ -32,7 +31,6 @@ const tabs = [
   "Visão geral",
   "Minhas campanhas",
   "Criar campanha",
-  "Criativos com IA",
   "Públicos",
   "Conversões",
   "Otimização inteligente",
@@ -63,7 +61,6 @@ export function LaborAds() {
     [busy, setBusy] = useState(false),
     [draft, setDraft] = useState(initial),
     [editId, setEditId] = useState<string>(),
-    [extra, setExtra] = useState(false),
     [postId, setPostId] = useState("");
   const { data, error, refetch } = useQuery({
     queryKey: ["labor-ads"],
@@ -589,55 +586,6 @@ export function LaborAds() {
             Salvar rascunho
           </Button>
         </form>
-      )}
-      {tab === "Criativos com IA" && (
-        <>
-          <h3>Três sugestões semanais</h3>
-          <p>
-            Cada geração entrega três variações. Sugestões exigem revisão; não são publicadas
-            automaticamente.
-          </p>
-          <label>
-            Produto
-            <select
-              aria-label="Produto"
-              value={draft.productId}
-              onChange={(e) => setDraft({ ...draft, productId: e.target.value })}
-            >
-              <option value="">Selecione</option>
-              {data?.products.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            <input type="checkbox" checked={extra} onChange={(e) => setExtra(e.target.checked)} />{" "}
-            Autorizo geração adicional, se franquia semanal acabou.
-          </label>
-          <Button
-            disabled={busy || !draft.productId}
-            onClick={() => run(() => adsSuggest({ data: { productId: draft.productId, extra } }))}
-          >
-            Gerar com Gemini
-          </Button>
-          {data?.creatives.map((c) => (
-            <article className="ads-row" key={c.id}>
-              {c.suggestions.length ? (
-                c.suggestions.map((s, i) => (
-                  <div key={i}>
-                    <h4>{s.headline}</h4>
-                    <p>{s.text}</p>
-                    <strong>{s.cta}</strong>
-                  </div>
-                ))
-              ) : (
-                <p>Geração reservada; resposta indisponível.</p>
-              )}
-            </article>
-          ))}
-        </>
       )}
       {tab === "Conversões" && (
         <>
