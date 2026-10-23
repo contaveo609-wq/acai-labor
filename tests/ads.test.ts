@@ -8,7 +8,13 @@ import { PGlite } from "@electric-sql/pglite";
 import { createAdsService } from "../src/lib/ads.service";
 import { createAdsTransport } from "../src/lib/ads.meta";
 import { createSupportVault } from "../src/lib/support.secrets";
-import { draftSchema, summarize, recommendations } from "../src/lib/ads.types";
+import {
+  draftSchema,
+  summarize,
+  recommendations,
+  evidenceRecommendations,
+  paidCommerce,
+} from "../src/lib/ads.types";
 import type { LaborDatabase } from "../src/lib/labor.types";
 import { DEFAULT_SUPPORT } from "../src/lib/support.types";
 import seed from "../src/data/labor-catalog.json";
@@ -17,6 +23,77 @@ process.env["META_ADS_API_VERSION"] = "v25.0";
 process.env["META_ADS_APP_ID"] = "123";
 process.env["META_ADS_APP_SECRET"] = "test-app-secret";
 process.env["META_ADS_REDIRECT_URI"] = "https://example.com/api/meta-ads/callback";
+test("Ads: análises comerciais excluem teste, cancelamento e reembolso", () => {
+  const id = randomUUID();
+  const base = {
+    id: randomUUID(),
+    order_number: 1,
+    created_at: new Date().toISOString(),
+    status: "concluido",
+    is_test: false,
+    payment_status: "pago" as const,
+    customer_name: "",
+    customer_phone: "",
+    street: "",
+    number: "",
+    complement: null,
+    neighborhood: "",
+    reference: null,
+    payment_method: "pix",
+    change_for: null,
+    notes: null,
+    fulfillment: "pickup" as const,
+    subtotal: 40,
+    delivery_fee: 0,
+    discount: 0,
+    total: 40,
+    history: [],
+    attribution: { campaign: "acai" },
+    order_items: [
+      {
+        id: randomUUID(),
+        product_id: id,
+        product_name: "Açaí",
+        quantity: 2,
+        unit_price: 20,
+        line_total: 40,
+        notes: null,
+        order_item_addons: [],
+      },
+    ],
+  };
+  const result = paidCommerce([
+    base,
+    { ...base, is_test: true },
+    { ...base, payment_status: "reembolsado" },
+    { ...base, status: "cancelado" },
+  ]);
+  assert.equal(result.paidOrders, 1);
+  assert.equal(result.revenue, 40);
+  assert.equal(result.products[0]?.units, 2);
+  assert.equal(result.campaigns[0]?.orders, 1);
+});
+test("Ads: recomendação de ampliar verba exige amostra suficiente e mostra risco", () => {
+  const row = {
+    campaignId: "123",
+    name: "Açaí",
+    date: "2026-10-01",
+    currency: "BRL",
+    spend: 10,
+    impressions: 1000,
+    reach: 700,
+    clicks: 40,
+    purchases: 2,
+    revenue: 100,
+  };
+  assert.equal(evidenceRecommendations([row]).length, 0);
+  const sample = Array.from({ length: 7 }, (_, i) => ({ ...row, date: `2026-10-0${i + 1}` }));
+  const items = evidenceRecommendations(sample);
+  assert.equal(items.length, 1);
+  assert.match(items[0]!.reason, /10%/);
+  assert.equal(items[0]!.confidence, "alta");
+  assert.match(items[0]!.risk, /CPA/);
+});
 test("Ads: CAPI reutiliza event_id e não envia o mesmo evento duas vezes", async (t) => {
   let sent = 0,
     eventId = "";

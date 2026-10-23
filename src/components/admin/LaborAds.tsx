@@ -21,7 +21,7 @@ import {
   adsPrepare,
   adsDispatch,
 } from "@/lib/ads.functions";
-import { objectives, summarize, type AdsDraft } from "@/lib/ads.types";
+import { evidenceRecommendations, objectives, summarize, type AdsDraft } from "@/lib/ads.types";
 import { formatBRL } from "@/lib/menu";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -61,6 +61,7 @@ export function LaborAds() {
     [busy, setBusy] = useState(false),
     [draft, setDraft] = useState(initial),
     [editId, setEditId] = useState<string>(),
+    [selectedCampaign, setSelectedCampaign] = useState(""),
     [postId, setPostId] = useState("");
   const { data, error, refetch } = useQuery({
     queryKey: ["labor-ads"],
@@ -82,7 +83,12 @@ export function LaborAds() {
       setBusy(false);
     }
   }
-  const rows = (data?.insights || []).filter((v) => v.date >= since && v.date <= until),
+  const rows = (data?.insights || []).filter(
+      (v) =>
+        v.date >= since &&
+        v.date <= until &&
+        (!selectedCampaign || v.campaignId === selectedCampaign),
+    ),
     total = summarize(rows);
   const days = [...new Set(rows.map((v) => v.date))]
     .sort()
@@ -181,6 +187,21 @@ export function LaborAds() {
           <label>
             Até
             <Input type="date" value={until} onChange={(e) => setUntil(e.target.value)} />
+          </label>
+          <label>
+            Campanha
+            <select
+              aria-label="Filtrar campanha"
+              value={selectedCampaign}
+              onChange={(e) => setSelectedCampaign(e.target.value)}
+            >
+              <option value="">Todas</option>
+              {data?.campaigns.map((campaign) => (
+                <option key={campaign.id} value={campaign.id}>
+                  {campaign.name}
+                </option>
+              ))}
+            </select>
           </label>
           <Button
             disabled={busy || !data?.account}
@@ -616,14 +637,18 @@ export function LaborAds() {
         <>
           <h3>Análise do período importado</h3>
           <p>
-            Metas: ROAS 3×, CPA R$ 20 e CTR mínimo 1% após 1.000 impressões. Nenhuma alteração de
-            orçamento ocorre automaticamente.
+            Metas de referência: ROAS 3×, CPA R$ 20 e CTR 1%. Recomendações usam apenas métricas
+            sincronizadas e exigem revisão antes de alterar a Meta.
           </p>
-          {data?.recommendations.length ? (
-            data.recommendations.map((r, i) => (
+          {evidenceRecommendations(rows).length ? (
+            evidenceRecommendations(rows).map((r, i) => (
               <article className="ads-row" key={i}>
-                <strong>{r.campaignId}</strong>
+                <strong>{r.name}</strong>
                 <p>{r.reason}</p>
+                <p>Base: {r.evidence}</p>
+                <p>
+                  Confiança: {r.confidence}. Risco: {r.risk}
+                </p>
                 <span>Revisão administrativa necessária</span>
               </article>
             ))
@@ -634,6 +659,48 @@ export function LaborAds() {
             Modo automático: desativado. Ativação depende de limites aprovados, execução periódica e
             integração remota.
           </p>
+          <h3>Inteligência comercial</h3>
+          <p>
+            Somente pedidos reais pagos e não cancelados. Receita não é lucro; custo e margem de
+            produto não estão cadastrados.
+          </p>
+          <p>
+            {data?.commerce.paidOrders || 0} pedidos pagos ·{" "}
+            {formatBRL(data?.commerce.revenue || 0)} de receita · ticket médio{" "}
+            {data?.commerce.average == null ? "—" : formatBRL(data.commerce.average)}
+          </p>
+          <div className="ads-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>Produto</th>
+                  <th>Unidades</th>
+                  <th>Receita</th>
+                  <th>Ticket por pedido</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data?.commerce.products.slice(0, 10).map((p) => (
+                  <tr key={p.id}>
+                    <td>{p.name}</td>
+                    <td>{p.units}</td>
+                    <td>{formatBRL(p.revenue)}</td>
+                    <td>{formatBRL(p.revenue / p.orders)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p>Origem UTM declarada em pedidos pagos (não comprova que o anúncio causou a compra):</p>
+          {data?.commerce.campaigns.length ? (
+            data.commerce.campaigns.map((c) => (
+              <p key={c.name}>
+                {c.name}: {c.orders} pedido(s), {formatBRL(c.revenue)}
+              </p>
+            ))
+          ) : (
+            <p>Sem pedidos reais atribuídos internamente.</p>
+          )}
         </>
       )}
       {tab === "Integrações e configurações" && (

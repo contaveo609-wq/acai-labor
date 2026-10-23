@@ -28,7 +28,7 @@ export type LaborOrder = {
   order_number: number;
   created_at: string;
   status: string;
-  is_test: true;
+  is_test: boolean;
   payment_status?: "pendente" | "em_analise" | "pago" | "recusado" | "reembolsado";
   scheduled_for?: string | null;
   internal_notes?: Array<{ text: string; at: string; actor: string }>;

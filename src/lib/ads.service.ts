@@ -2,7 +2,14 @@ import { createHash, randomBytes, randomUUID } from "node:crypto";
 import { z } from "zod";
 import type { LaborDependencies } from "./labor.dependencies";
 import { createSupportVault } from "./support.secrets";
-import { adsState, draftSchema, recommendations, trackingSchema, type Insight } from "./ads.types";
+import {
+  adsState,
+  draftSchema,
+  evidenceRecommendations,
+  paidCommerce,
+  trackingSchema,
+  type Insight,
+} from "./ads.types";
 import { accountDTO, campaignDTO, createAdsTransport, metaConfig } from "./ads.meta";
 const hash = (v: string) => createHash("sha256").update(v).digest("hex");
 const numeric = z.coerce.number().finite().nonnegative();
@@ -63,31 +70,21 @@ export function createAdsService(deps: LaborDependencies, request: typeof fetch 
           description: p.description,
           image: p.product_images[0]?.url,
         }));
-      const paid = db.orders.filter(
-        (o) => !o.is_test && o.payment_status === "pago" && o.status !== "cancelado",
-      );
+      const commerce = paidCommerce(db.orders);
       return {
         ...a,
         oauth: undefined,
         connected: await vault.configured(),
         products,
         commerce: {
-          paidOrders: paid.length,
-          revenue: paid.reduce((s, o) => s + o.total, 0),
-          average: paid.length ? paid.reduce((s, o) => s + o.total, 0) / paid.length : null,
+          ...commerce,
           bestSellers: products
-            .map((p) => ({
-              ...p,
-              units: paid
-                .flatMap((o) => o.order_items)
-                .filter((i) => i.product_id === p.id)
-                .reduce((s, i) => s + i.quantity, 0),
-            }))
+            .map((p) => ({ ...p, units: commerce.products.find((v) => v.id === p.id)?.units || 0 }))
             .filter((p) => p.units > 0)
-            .sort((a, b) => b.units - a.units)
+            .sort((x, y) => y.units - x.units)
             .slice(0, 10),
         },
-        recommendations: recommendations(a.insights),
+        recommendations: evidenceRecommendations(a.insights),
         pixel: process.env["META_ADS_PIXEL_ID"] || "",
         remotePersistence: false,
       };

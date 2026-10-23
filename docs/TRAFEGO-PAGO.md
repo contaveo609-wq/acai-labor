@@ -41,3 +41,9 @@ Não habilite anúncios reais em Vercel/Lovable usando arquivos temporários. A 
 ## Limitações explícitas
 
 Pendentes: edição remota completa de orçamento/conjunto, públicos personalizados, upload de criativos novos, recomendações geradas por IA com desempenho, redistribuição automática, atribuição direta por produto/período no relatório, scheduler, persistência remota, Purchase e confirmação financeira. O orçamento planejado do rascunho é aplicado ao criar conjunto; editar rascunho não edita orçamento de conjunto já enviado. Ativar somente campanha ou anúncio não ativa automaticamente todos os níveis. Revise cada nível no Gerenciador Meta.
+
+## Evolução da análise em 23/10/2026
+
+O painel passou a filtrar campanhas no período selecionado e a explicar cada recomendação com amostra, confiança e risco. A sugestão de testar aumento de até 10% só aparece após pelo menos sete registros diários e dez compras reportadas pela Meta, com ROAS e CPA dentro das metas. Ela não altera orçamento. A inteligência comercial soma apenas pedidos não demonstrativos, pagos e não cancelados; mostra unidades, receita de itens, ticket médio e origem UTM declarada. Pedidos reembolsados não contam. Receita não representa lucro. A aba de geração de criativos com IA continua ausente por solicitação direta do proprietário; o serviço antigo permanece inacessível pela interface.
+
+A migration de tráfego pago ainda não foi aplicada ao Supabase remoto. O painel continua em arquivos locais e a fila de proteção financeira continua limitada a um processo. Não ative operações pagas em múltiplas instâncias até implementar transações compartilhadas, sessões e cofre persistentes. A exportação PDF ainda usa a impressão do navegador. Compra real, renovação do token Meta, comparação de criativos e execução automática continuam pendentes.

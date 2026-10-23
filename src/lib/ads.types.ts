@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { LaborOrder } from "./labor.types";
 export const objectives = [
   "OUTCOME_TRAFFIC",
   "OUTCOME_SALES",
@@ -146,5 +147,113 @@ export function recommendations(rows: Insight[], targetRoas = 3, maxCpa = 20) {
         notes.push("CTR caiu mais de 30% nos últimos três registros: teste outra variação.");
     }
     return notes.map((reason) => ({ campaignId: id, reason, approvalRequired: true }));
+  });
+}
+
+export function paidCommerce(orders: LaborOrder[]) {
+  const paid = orders.filter(
+    (o) => !o.is_test && o.payment_status === "pago" && o.status !== "cancelado",
+  );
+  const products = new Map<
+    string,
+    { id: string; name: string; units: number; revenue: number; orders: number }
+  >();
+  const campaigns = new Map<string, { name: string; orders: number; revenue: number }>();
+  for (const order of paid) {
+    const campaign = order.attribution?.campaign;
+    if (campaign) {
+      const row = campaigns.get(campaign) || { name: campaign, orders: 0, revenue: 0 };
+      row.orders++;
+      row.revenue += order.total;
+      campaigns.set(campaign, row);
+    }
+    for (const item of order.order_items) {
+      const row = products.get(item.product_id) || {
+        id: item.product_id,
+        name: item.product_name,
+        units: 0,
+        revenue: 0,
+        orders: 0,
+      };
+      row.units += item.quantity;
+      row.revenue += item.line_total;
+      row.orders++;
+      products.set(item.product_id, row);
+    }
+  }
+  return {
+    paidOrders: paid.length,
+    revenue: paid.reduce((sum, order) => sum + order.total, 0),
+    average: paid.length ? paid.reduce((sum, order) => sum + order.total, 0) / paid.length : null,
+    products: [...products.values()].sort((a, b) => b.revenue - a.revenue),
+    campaigns: [...campaigns.values()].sort((a, b) => b.orders - a.orders),
+  };
+}
+
+export function evidenceRecommendations(rows: Insight[], targetRoas = 3, maxCpa = 20) {
+  return [...new Set(rows.map((row) => row.campaignId))].flatMap((id) => {
+    const sample = rows.filter((row) => row.campaignId === id);
+    const result = summarize(sample);
+    const confidence =
+      sample.length >= 7 && result.purchases >= 10
+        ? "alta"
+        : sample.length >= 3 && result.impressions >= 1000
+          ? "moderada"
+          : "baixa";
+    const findings: {
+      campaignId: string;
+      name: string;
+      reason: string;
+      evidence: string;
+      confidence: string;
+      risk: string;
+      approvalRequired: true;
+    }[] = [];
+    const add = (reason: string, risk: string) =>
+      findings.push({
+        campaignId: id,
+        name: sample[0]?.name || id,
+        reason,
+        evidence: `${sample.length} dia(s), ${result.impressions} impressões, ${result.clicks} cliques, R$ ${result.spend.toFixed(2)} gastos, ${result.purchases} compras reportadas pela Meta.`,
+        confidence,
+        risk,
+        approvalRequired: true,
+      });
+    if (result.impressions >= 1000 && result.ctr !== null && result.ctr < 1)
+      add(
+        `CTR de ${result.ctr.toFixed(2)}%: revise o anúncio e o público.`,
+        "Trocar o anúncio pode reduzir resultados durante a fase de aprendizado.",
+      );
+    if (
+      result.spend >= maxCpa * 2 &&
+      (!result.purchases || (result.cpa !== null && result.cpa > maxCpa))
+    )
+      add(
+        `CPA ${result.cpa === null ? "indisponível" : `R$ ${result.cpa.toFixed(2)}`} acima da meta R$ ${maxCpa.toFixed(2)}: avalie pausar após revisão.`,
+        "A atribuição da Meta pode divergir dos pedidos pagos internamente.",
+      );
+    if (
+      result.purchases >= 3 &&
+      result.spend > 0 &&
+      result.roas !== null &&
+      result.roas < targetRoas
+    )
+      add(
+        `ROAS ${result.roas.toFixed(2)}× abaixo da meta ${targetRoas.toFixed(2)}×: revise oferta e segmentação.`,
+        "ROAS usa receita atribuída pela Meta e não representa lucro.",
+      );
+    if (
+      result.purchases >= 10 &&
+      sample.length >= 7 &&
+      result.roas !== null &&
+      result.roas >= targetRoas &&
+      result.cpa !== null &&
+      result.cpa <= maxCpa
+    )
+      add(
+        "Resultados superam as metas; considere testar aumento de orçamento de até 10%, com aprovação.",
+        "Aumentar o orçamento pode elevar o CPA; resultados passados não garantem os próximos.",
+      );
+    return findings;
   });
 }
