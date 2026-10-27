@@ -89,12 +89,6 @@ export function createLaborService(
     }
   }
   function mutate<T>(fn: (db: LaborDatabase) => T | Promise<T>): Promise<T> {
-    if (process.env["VERCEL"])
-      return Promise.reject(
-        new Error(
-          "Pedidos e alterações administrativas indisponíveis: armazenamento persistente ainda não configurado para Vercel.",
-        ),
-      );
     const operation = queue.then(async () => {
       await mkdir(directory, { recursive: true });
       const db = await read();
@@ -179,7 +173,9 @@ export function createLaborService(
     async catalog() {
       const db = await read();
       return {
-        ordering_enabled: !process.env["VERCEL"],
+        // Vercel uses /tmp for this demo adapter. This enables the complete
+        // checkout/Pix flow while Supabase persistence is being configured.
+        ordering_enabled: true,
         store: db.store,
         categories: db.categories
           .filter((c) => c.is_active)
