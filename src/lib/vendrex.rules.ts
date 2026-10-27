@@ -34,27 +34,36 @@ export const DEFAULT_HOURS = Array.from({ length: 7 }, (_, day) => ({
   closes: "18:00",
 }));
 export const DEFAULT_BRAND = {
-  primary_color: "#633185",
-  accent_color: "#b4cb7c",
-  hero_title: "Seu dia pede um pouco de açaí.",
-  hero_description: "Cremoso na medida. Sabor em cada colherada.",
+  primary_color: "#97084f",
+  accent_color: "#9bd13b",
+  hero_title: "Açaí Labor: sabor que refresca o seu dia.",
+  hero_description: "Açaí, cupuaçu, sorvetes e muito mais, direto da Labor para o seu pedido.",
 };
 
 /** Additive in-memory migration; persistence occurs inside the existing atomic write queue. */
 export function migrateV2(db: LaborDatabase): LaborDatabase {
+  if ((db.schema_version || 1) < 2) {
+    db.store = {
+      ...DEFAULT_BRAND,
+      minimum_order: 0,
+      delivery_enabled: true,
+      pickup_enabled: true,
+      scheduling_enabled: false,
+      schedule_lead_minutes: 60,
+      schedule_days: 7,
+      enforce_hours: false,
+      weekly_hours: DEFAULT_HOURS.map((h) => ({ ...h })),
+      ...db.store,
+    };
+  }
+  if (!db.store.logo_url) db.store.logo_url = "/images/acai-labor-logo.png";
+  if (db.store.primary_color === "#633185") db.store.primary_color = DEFAULT_BRAND.primary_color;
+  if (db.store.accent_color === "#b4cb7c") db.store.accent_color = DEFAULT_BRAND.accent_color;
+  if (db.store.hero_title === "Seu dia pede um pouco de açaí.")
+    db.store.hero_title = DEFAULT_BRAND.hero_title;
+  if (db.store.hero_description === "Cremoso na medida. Sabor em cada colherada.")
+    db.store.hero_description = DEFAULT_BRAND.hero_description;
   if ((db.schema_version || 1) >= 2) return db;
-  db.store = {
-    ...DEFAULT_BRAND,
-    minimum_order: 0,
-    delivery_enabled: true,
-    pickup_enabled: true,
-    scheduling_enabled: false,
-    schedule_lead_minutes: 60,
-    schedule_days: 7,
-    enforce_hours: false,
-    weekly_hours: DEFAULT_HOURS.map((h) => ({ ...h })),
-    ...db.store,
-  };
   for (const p of db.products) {
     p.sale_unit ??= p.slug.startsWith("10-caixas")
       ? "combo"

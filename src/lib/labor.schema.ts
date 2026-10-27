@@ -8,6 +8,7 @@ const imageUrl = z
   .refine(
     (s) =>
       s.startsWith("/catalog/") ||
+      s.startsWith("/images/") ||
       /^https:\/\//.test(s) ||
       /^data:image\/(png|jpeg|webp);base64,/.test(s),
     "Use imagem PNG, JPG ou WebP",

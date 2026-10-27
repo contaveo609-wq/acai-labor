@@ -10,8 +10,13 @@ export function VendrexTheme() {
     for (const [key, value] of Object.entries({
       "--primary": primary,
       "--brand": primary,
+      "--brand-dark": `color-mix(in srgb, ${primary} 65%, #18030e)`,
       "--ring": primary,
       "--gold": accent,
+      "--secondary": `color-mix(in srgb, ${primary} 8%, white)`,
+      "--accent": `color-mix(in srgb, ${accent} 22%, white)`,
+      "--accent-foreground": `color-mix(in srgb, ${primary} 75%, #18030e)`,
+      "--border": `color-mix(in srgb, ${primary} 15%, white)`,
     }))
       document.body.style.setProperty(key, value);
   }, [data?.primary_color, data?.accent_color]);

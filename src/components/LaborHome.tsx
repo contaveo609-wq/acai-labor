@@ -4,9 +4,11 @@ import { ArrowDown, ArrowUpRight, Sparkles, Snowflake, Package } from "lucide-re
 import { SiteShell } from "./SiteShell";
 import { AcaiIllustration } from "./AcaiIllustration";
 import { MenuBrowser } from "./MenuBrowser";
+import { fetchStoreSettings } from "@/lib/menu";
 
 export function LaborHome() {
   const [search, setSearch] = useState("");
+  const { data: store } = useQuery({ queryKey: ["store"], queryFn: fetchStoreSettings });
   return (
     <SiteShell search={search} onSearchChange={setSearch}>
       <section className="labor-hero">
@@ -17,16 +19,20 @@ export function LaborHome() {
             <span /> A SUA PAUSA MAIS GOSTOSA
           </span>
           <h1>
-            Seu dia pede
-            <br />
-            um pouco de <em>açaí.</em>
+            {store?.hero_title || "Açaí Labor: sabor que refresca o seu dia."}
             <svg viewBox="0 0 200 16" aria-hidden="true">
-              <path d="M3 11C60 1 130 0 196 7M16 15c69-7 122-6 167-3" stroke="currentColor" strokeWidth="3" fill="none" strokeLinecap="round" />
+              <path
+                d="M3 11C60 1 130 0 196 7M16 15c69-7 122-6 167-3"
+                stroke="currentColor"
+                strokeWidth="3"
+                fill="none"
+                strokeLinecap="round"
+              />
             </svg>
           </h1>
           <p>
-            Cremoso na medida. Sabor em cada colherada.
-            <br className="desktop-only" /> Escolha o seu favorito e deixe o resto com a gente.
+            {store?.hero_description ||
+              "Açaí, cupuaçu, sorvetes e muito mais, direto da Labor para o seu pedido."}
           </p>
           <a href="#cardapio" className="hero-cta">
             Encontrar meu favorito <ArrowDown size={18} />
@@ -45,9 +51,14 @@ export function LaborHome() {
           <span className="hero-spark spark-one">✦</span>
           <span className="hero-spark spark-two">✧</span>
           <div className="hero-art-circle" />
+          {store?.logo_url && (
+            <img className="hero-brand-logo" src={store.logo_url} alt="Açaí Labor" />
+          )}
           <AcaiIllustration className="hero-bowl" />
           <div className="hero-sticker">
-            Sabor que<br /><b>abraça.</b> <Sparkles size={17} />
+            Sabor que
+            <br />
+            <b>abraça.</b> <Sparkles size={17} />
           </div>
           <span className="hero-art-note">ilustração da casa ↗</span>
         </div>

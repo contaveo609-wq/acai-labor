@@ -97,7 +97,7 @@ const navItems: Array<[Tab, string, typeof Package]> = [
   ["entregadores", "Entregadores", ShoppingBag],
   ["categorias", "Categorias", List],
   ["promocoes", "Promoções", Tag],
-  ["configuracoes", "Minha loja", Settings],
+  ["configuracoes", "Página & identidade", Settings],
   ["auditoria", "Auditoria", ShieldCheck],
 ];
 
@@ -374,7 +374,15 @@ export function LaborAdmin() {
   );
 }
 
-function AdminLogin({ needsSetup, mfaRequired, onSuccess }: { needsSetup: boolean; mfaRequired: boolean; onSuccess: () => void }) {
+function AdminLogin({
+  needsSetup,
+  mfaRequired,
+  onSuccess,
+}: {
+  needsSetup: boolean;
+  mfaRequired: boolean;
+  onSuccess: () => void;
+}) {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [code, setCode] = useState("");
@@ -391,7 +399,9 @@ function AdminLogin({ needsSetup, mfaRequired, onSuccess }: { needsSetup: boolea
           }
           setBusy(true);
           try {
-            await laborLogin({ data: { password, setup: needsSetup, code: mfaRequired ? code.trim() : undefined } });
+            await laborLogin({
+              data: { password, setup: needsSetup, code: mfaRequired ? code.trim() : undefined },
+            });
             onSuccess();
           } catch (error) {
             toast.error(errorMessage(error));
@@ -437,7 +447,15 @@ function AdminLogin({ needsSetup, mfaRequired, onSuccess }: { needsSetup: boolea
         {mfaRequired && !needsSetup && (
           <>
             <label htmlFor="admin-mfa">Código de verificação em duas etapas</label>
-            <Input id="admin-mfa" inputMode="numeric" autoComplete="one-time-code" required value={code} onChange={(e) => setCode(e.target.value)} placeholder="Autenticador ou código de recuperação" />
+            <Input
+              id="admin-mfa"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              required
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              placeholder="Autenticador ou código de recuperação"
+            />
           </>
         )}
         <Button className="w-full mt-6" disabled={busy}>
@@ -1139,10 +1157,10 @@ function StoreEditor({
         }
       }}
     >
-      <h3>A casa do seu jeito</h3>
+      <h3>Editor universal da página</h3>
       <p className="text-xs text-muted-foreground mb-6">
-        Taxa de R$ 5 e status de abertura são configurações de teste. Confirme os dados comerciais
-        antes de publicar.
+        Nome, logomarca, cores, textos, entrega e regras ficam centralizados aqui. Ao salvar, o site
+        público inteiro recebe a atualização.
       </p>
       <div className="admin-form-grid">
         <label className="span-two">
@@ -1173,9 +1191,9 @@ function StoreEditor({
             <button
               type="button"
               className="text-xs text-primary underline"
-              onClick={() => setS({ ...s, logo_url: null })}
+              onClick={() => setS({ ...s, logo_url: "/images/acai-labor-logo.png" })}
             >
-              Usar marca provisória
+              Restaurar logomarca Açaí Labor
             </button>
           </div>
         )}

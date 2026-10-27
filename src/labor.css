@@ -5,22 +5,22 @@
   --card-foreground: #302438;
   --popover: #fff;
   --popover-foreground: #302438;
-  --primary: #633185;
+  --primary: #97084f;
   --primary-foreground: #fff;
-  --brand: #633185;
-  --brand-dark: #2b123c;
+  --brand: #97084f;
+  --brand-dark: #3b0825;
   --brand-foreground: #fff;
-  --gold: #d7ed92;
-  --gold-foreground: #34451c;
-  --secondary: #f1eaf7;
-  --secondary-foreground: #633185;
-  --muted: #f3eff4;
-  --muted-foreground: #786e7e;
-  --accent: #eee5f5;
-  --accent-foreground: #633185;
-  --border: #e9e2eb;
-  --input: #dfd6e4;
-  --ring: #8555a4;
+  --gold: #9bd13b;
+  --gold-foreground: #23390f;
+  --secondary: #fdf0f6;
+  --secondary-foreground: #97084f;
+  --muted: #faf2f6;
+  --muted-foreground: #7a5366;
+  --accent: #eef8db;
+  --accent-foreground: #6c063a;
+  --border: #f0d5e2;
+  --input: #eacddd;
+  --ring: #97084f;
   --success: #3e6f41;
   --success-foreground: #fff;
   --radius: 1rem;
@@ -51,7 +51,7 @@
   outline: 3px solid #9571b3;
 }
 .labor-theme .brand-gradient {
-  background: linear-gradient(120deg, #48215e, #653484);
+  background: linear-gradient(120deg, var(--brand-dark), var(--brand));
 }
 .demo-strip {
   background: #efe7f5;
@@ -90,7 +90,7 @@
   font-family: var(--font-display);
   font-size: 25px;
   line-height: 1;
-  color: #452356;
+  color: var(--brand-dark);
   letter-spacing: -1px;
   flex-shrink: 0;
 }
@@ -109,7 +109,7 @@
   width: 42px;
   height: 43px;
   border-radius: 15px 15px 19px 19px;
-  background: #633185;
+  background: var(--primary);
   color: #f4eaf9;
   font-size: 42px;
   line-height: 37px;
@@ -247,45 +247,45 @@
   font-size: 9px;
   letter-spacing: 1.9px;
   font-weight: 600;
-  color: #886b96;
+  color: color-mix(in srgb, var(--primary) 72%, #4d3442);
 }
 .eyebrow > span {
   width: 5px;
   height: 5px;
-  background: #779345;
+  background: var(--gold);
   border-radius: 100%;
 }
 .labor-hero h1 {
   font-size: 60px;
   line-height: 1.07;
   font-weight: 600;
-  color: #3e234c;
+  color: var(--brand-dark);
   margin: 20px 0;
   position: relative;
   letter-spacing: -3px;
 }
 .labor-hero h1 em {
   font-style: normal;
-  color: #80519a;
+  color: var(--primary);
 }
 .labor-hero h1 svg {
   position: absolute;
   bottom: -12px;
   left: 310px;
   width: 125px;
-  color: #9bb54e;
+  color: var(--gold);
 }
 .hero-copy > p {
   font-size: 12px;
   line-height: 1.9;
-  color: #8a7b90;
+  color: color-mix(in srgb, var(--brand-dark) 56%, white);
   margin-top: 26px;
 }
 .hero-cta {
   display: inline-flex;
   gap: 25px;
   align-items: center;
-  background: #633185;
+  background: var(--primary);
   color: white;
   border-radius: 10px;
   padding: 15px 20px;
@@ -295,16 +295,16 @@
   transition:
     transform 0.2s,
     background 0.2s;
-  box-shadow: 0 5px 12px #63318518;
+  box-shadow: 0 5px 12px color-mix(in srgb, var(--primary) 18%, transparent);
 }
 .hero-cta:hover {
-  background: #4e246b;
+  background: var(--brand-dark);
   transform: translateY(-2px);
 }
 .hero-details {
   display: flex;
   gap: 22px;
-  color: #97869e;
+  color: color-mix(in srgb, var(--brand-dark) 50%, white);
   font-size: 9px;
   margin-top: 30px;
 }
@@ -325,14 +325,14 @@
   width: 330px;
   height: 330px;
   border-radius: 50%;
-  background: #f0e6f5;
+  background: color-mix(in srgb, var(--accent) 56%, white);
   z-index: -1;
 }
 .hero-art-circle:after {
   content: "";
   position: absolute;
   inset: -15px;
-  border: 1px dashed #e2d3ea;
+  border: 1px dashed color-mix(in srgb, var(--primary) 22%, white);
   border-radius: 50%;
   transform: rotate(-12deg);
 }
@@ -340,7 +340,7 @@
   width: 440px;
   max-width: 120%;
   transform: rotate(-6deg);
-  filter: drop-shadow(0 22px 20px #58277418);
+  filter: drop-shadow(0 22px 20px color-mix(in srgb, var(--primary) 18%, transparent));
   animation: float-bowl 8s ease-in-out infinite;
 }
 .orbit-word {
@@ -351,7 +351,19 @@
   transform: translateX(-50%) rotate(9deg);
   font-size: 8px;
   letter-spacing: 2.4px;
-  color: #a588b7;
+  color: color-mix(in srgb, var(--primary) 44%, white);
+}
+.hero-brand-logo {
+  position: absolute;
+  top: 36px;
+  right: 28px;
+  z-index: 3;
+  width: 76px;
+  height: 76px;
+  border-radius: 20px;
+  object-fit: contain;
+  background: white;
+  box-shadow: 0 12px 32px color-mix(in srgb, var(--primary) 24%, transparent);
 }
 .hero-spark {
   position: absolute;

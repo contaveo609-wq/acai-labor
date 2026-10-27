@@ -88,7 +88,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       {
-        title: DEMO_MODE ? "Açaí Labor · Pedidos online" : "Skina do Frango & Assados — Pedidos online",
+        title: DEMO_MODE
+          ? "Açaí Labor · Pedidos online"
+          : "Skina do Frango & Assados — Pedidos online",
       },
       {
         name: "description",
@@ -97,7 +99,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           : "Assados na brasa em Rondonópolis/MT. Peça combos, costela no bafo, fraldinha e acompanhamentos com entrega.",
       },
       { name: "author", content: DEMO_MODE ? "Açaí Labor" : "Skina do Frango & Assados" },
-      { name: "theme-color", content: DEMO_MODE ? "#633185" : "#B01217" },
+      { name: "theme-color", content: DEMO_MODE ? "#97084f" : "#B01217" },
       { property: "og:site_name", content: DEMO_MODE ? "Açaí Labor" : "Skina do Frango & Assados" },
       { property: "og:locale", content: "pt_BR" },
       { property: "og:type", content: "website" },
@@ -106,11 +108,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     links: [
       { rel: "stylesheet", href: appCss },
       ...(DEMO_MODE ? [{ rel: "manifest", href: "/manifest.webmanifest" }] : []),
-      ...(DEMO_MODE
-        ? [
-            { rel: "stylesheet", href: laborCss },
-          ]
-        : []),
+      ...(DEMO_MODE ? [{ rel: "stylesheet", href: laborCss }] : []),
       {
         rel: "icon",
         type: DEMO_MODE ? "image/svg+xml" : "image/png",
