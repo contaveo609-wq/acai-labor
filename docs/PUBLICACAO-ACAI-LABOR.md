@@ -2,6 +2,22 @@
 
 O código aceita um único processo Node com armazenamento persistente. A publicação ainda não foi realizada. Não use hospedagem que descarte `.local/labor` entre reinícios ou que execute várias réplicas contra a mesma pasta.
 
+## Situação da Vercel em 27/10/2026
+
+O checkout da Açaí Labor **não está pronto para receber compras reais na Vercel**. O adaptador atual grava catálogo, pedidos e senha administrativa em arquivos; sessões, limite de tentativas e fila de gravação ficam na memória do processo. As Functions da Vercel podem ter várias instâncias e não fornecem uma pasta persistente compartilhada. Por isso, o serviço de pedidos e as alterações administrativas que usam `mutate` agora recusam execução quando `VERCEL` está definido. Outros módulos com gravação própria ainda exigem migração. A página pública pode mostrar o catálogo, mas não deve anunciar a loja como aberta para compras.
+
+`LABOR_STORAGE=supabase` ainda não seleciona um adaptador: não há implementação de persistência da Açaí Labor em Supabase. As migrations presentes em `supabase/migrations` pertencem à base legada Skina/Vendrex, não foram validadas para criar esta loja em um projeto novo. Não as aplique a uma conta de produção por suposição.
+
+O projeto Supabase informado pelo proprietário é `https://njhlctqpqgbdqrgursjm.supabase.co` (respondeu HTTP 401 sem chave, como esperado). O `supabase/config.toml` do repositório aponta para outro projeto, `jnkfyzqivgilzrzkryaj`; portanto, não use `supabase db push` nem a configuração legada contra o projeto novo. A URL pública sozinha não concede acesso ao esquema, às configurações ou às chaves.
+
+Em um benchmark local isolado, 100 pedidos concorrentes levaram 1,2 s; 1.000 levaram 68,3 s, e o único arquivo de dados chegou a 2,05 MB. Isso verifica apenas o adaptador de arquivos em uma máquina, não a capacidade da Vercel ou do Supabase. A meta de 1.000 compras por dia por 30 dias requer testes no ambiente definitivo com banco persistente, picos realistas, reconciliação de pagamentos e monitoração de erros.
+
+Após atualizar `source-map-js`, `vite` e `zod`, `npm audit --omit=dev` mostrou zero vulnerabilidades em 27/10/2026. O audit completo ainda mostra quatro avisos moderados no `esbuild` antigo puxado por `drizzle-kit`, ferramenta de desenvolvimento; isso não é uma certificação de segurança do aplicativo.
+
+Para lançar nesta plataforma: implementar tabelas e transações atômicas para pedidos, estoque e idempotência; persistir autenticação administrativa, sessões, segredos, WhatsApp e push; migrar o catálogo e testar backup/restauração; integrar um provedor de pagamento ou formalizar conferência manual do Pix com chave bancária verificada; configurar ambiente de Preview e Production; executar testes de interface e carga no Preview; conferir logs e alertas. O Pix atual gera um BR Code estático e aceita uma declaração do cliente, mas nunca confirma recebimento bancário automaticamente; todos os pedidos atuais são marcados como teste.
+
+Uma loja comercial exige um plano Vercel Pro ou Enterprise conforme [as regras de uso da Vercel](https://vercel.com/docs/limits/fair-use-guidelines). O plano Hobby exibido nas capturas do projeto é destinado a uso pessoal não comercial.
+
 ## Antes de publicar
 
 1. Defina um domínio HTTPS próprio. Configure o proxy reverso para encaminhar o `Host` e protocolo HTTPS corretos, bloquear acesso direto à porta Node e renovar o certificado TLS. Defina `LABOR_PUBLIC_BASE_URL=https://dominio-da-loja` sem barra final. O servidor recusa outros domínios e HTTP.

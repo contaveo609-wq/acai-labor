@@ -49,6 +49,7 @@ import { Route as AdminSatisfacaoRouteImport } from './routes/admin.satisfacao'
 import { Route as AdminTestesIntegracoesRouteImport } from './routes/admin.testes-integracoes'
 import { Route as AdminUsuariosRouteImport } from './routes/admin.usuarios'
 import { Route as AdminWhatsappRouteImport } from './routes/admin.whatsapp'
+import { Route as CheckoutIdRouteImport } from './routes/checkout.$id'
 import { Route as PedidoIdRouteImport } from './routes/pedido.$id'
 import { Route as ApiWebhookWhatsappRouteImport } from './routes/api/webhook.whatsapp'
 
@@ -252,6 +253,11 @@ const AdminWhatsappRoute = AdminWhatsappRouteImport.update({
   path: '/whatsapp',
   getParentRoute: () => AdminRoute,
 } as any)
+const CheckoutIdRoute = CheckoutIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => CheckoutRoute,
+} as any)
 const PedidoIdRoute = PedidoIdRouteImport.update({
   id: '/pedido/$id',
   path: '/pedido/$id',
@@ -269,7 +275,7 @@ export interface FileRoutesByFullPath {
   '/cadastro': typeof CadastroRoute
   '/cardapio': typeof CardapioRoute
   '/carrinho': typeof CarrinhoRoute
-  '/checkout': typeof CheckoutRoute
+  '/checkout': typeof CheckoutRouteWithChildren
   '/login': typeof LoginRoute
   '/privacidade': typeof PrivacidadeRoute
   '/termos': typeof TermosRoute
@@ -302,6 +308,7 @@ export interface FileRoutesByFullPath {
   '/admin/testes-integracoes': typeof AdminTestesIntegracoesRoute
   '/admin/usuarios': typeof AdminUsuariosRoute
   '/admin/whatsapp': typeof AdminWhatsappRoute
+  '/checkout/$id': typeof CheckoutIdRoute
   '/pedido/$id': typeof PedidoIdRoute
   '/admin/': typeof AdminIndexRoute
   '/api/webhook/whatsapp': typeof ApiWebhookWhatsappRoute
@@ -311,7 +318,7 @@ export interface FileRoutesByTo {
   '/cadastro': typeof CadastroRoute
   '/cardapio': typeof CardapioRoute
   '/carrinho': typeof CarrinhoRoute
-  '/checkout': typeof CheckoutRoute
+  '/checkout': typeof CheckoutRouteWithChildren
   '/login': typeof LoginRoute
   '/privacidade': typeof PrivacidadeRoute
   '/termos': typeof TermosRoute
@@ -344,6 +351,7 @@ export interface FileRoutesByTo {
   '/admin/testes-integracoes': typeof AdminTestesIntegracoesRoute
   '/admin/usuarios': typeof AdminUsuariosRoute
   '/admin/whatsapp': typeof AdminWhatsappRoute
+  '/checkout/$id': typeof CheckoutIdRoute
   '/pedido/$id': typeof PedidoIdRoute
   '/admin': typeof AdminIndexRoute
   '/api/webhook/whatsapp': typeof ApiWebhookWhatsappRoute
@@ -356,7 +364,7 @@ export interface FileRoutesById {
   '/cadastro': typeof CadastroRoute
   '/cardapio': typeof CardapioRoute
   '/carrinho': typeof CarrinhoRoute
-  '/checkout': typeof CheckoutRoute
+  '/checkout': typeof CheckoutRouteWithChildren
   '/login': typeof LoginRoute
   '/privacidade': typeof PrivacidadeRoute
   '/termos': typeof TermosRoute
@@ -389,6 +397,7 @@ export interface FileRoutesById {
   '/admin/testes-integracoes': typeof AdminTestesIntegracoesRoute
   '/admin/usuarios': typeof AdminUsuariosRoute
   '/admin/whatsapp': typeof AdminWhatsappRoute
+  '/checkout/$id': typeof CheckoutIdRoute
   '/pedido/$id': typeof PedidoIdRoute
   '/admin/': typeof AdminIndexRoute
   '/api/webhook/whatsapp': typeof ApiWebhookWhatsappRoute
@@ -434,6 +443,7 @@ export interface FileRouteTypes {
     | '/admin/testes-integracoes'
     | '/admin/usuarios'
     | '/admin/whatsapp'
+    | '/checkout/$id'
     | '/pedido/$id'
     | '/admin/'
     | '/api/webhook/whatsapp'
@@ -476,6 +486,7 @@ export interface FileRouteTypes {
     | '/admin/testes-integracoes'
     | '/admin/usuarios'
     | '/admin/whatsapp'
+    | '/checkout/$id'
     | '/pedido/$id'
     | '/admin'
     | '/api/webhook/whatsapp'
@@ -520,6 +531,7 @@ export interface FileRouteTypes {
     | '/admin/testes-integracoes'
     | '/admin/usuarios'
     | '/admin/whatsapp'
+    | '/checkout/$id'
     | '/pedido/$id'
     | '/admin/'
     | '/api/webhook/whatsapp'
@@ -532,7 +544,7 @@ export interface RootRouteChildren {
   CadastroRoute: typeof CadastroRoute
   CardapioRoute: typeof CardapioRoute
   CarrinhoRoute: typeof CarrinhoRoute
-  CheckoutRoute: typeof CheckoutRoute
+  CheckoutRoute: typeof CheckoutRouteWithChildren
   LoginRoute: typeof LoginRoute
   PrivacidadeRoute: typeof PrivacidadeRoute
   TermosRoute: typeof TermosRoute
@@ -822,6 +834,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminWhatsappRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/checkout/$id': {
+      id: '/checkout/$id'
+      path: '/$id'
+      fullPath: '/checkout/$id'
+      preLoaderRoute: typeof CheckoutIdRouteImport
+      parentRoute: typeof CheckoutRoute
+    }
     '/pedido/$id': {
       id: '/pedido/$id'
       path: '/pedido/$id'
@@ -916,6 +935,18 @@ const AdminRouteChildren: AdminRouteChildren = {
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
+interface CheckoutRouteChildren {
+  CheckoutIdRoute: typeof CheckoutIdRoute
+}
+
+const CheckoutRouteChildren: CheckoutRouteChildren = {
+  CheckoutIdRoute: CheckoutIdRoute,
+}
+
+const CheckoutRouteWithChildren = CheckoutRoute._addFileChildren(
+  CheckoutRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
@@ -923,7 +954,7 @@ const rootRouteChildren: RootRouteChildren = {
   CadastroRoute: CadastroRoute,
   CardapioRoute: CardapioRoute,
   CarrinhoRoute: CarrinhoRoute,
-  CheckoutRoute: CheckoutRoute,
+  CheckoutRoute: CheckoutRouteWithChildren,
   LoginRoute: LoginRoute,
   PrivacidadeRoute: PrivacidadeRoute,
   TermosRoute: TermosRoute,

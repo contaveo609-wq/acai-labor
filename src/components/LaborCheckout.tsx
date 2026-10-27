@@ -95,6 +95,10 @@ export function LaborCheckout() {
     ["reference", "Ponto de referência"],
   ] as const;
   async function confirm() {
+    if (!catalog?.ordering_enabled) {
+      toast.error("Pedidos indisponíveis nesta prévia.");
+      return;
+    }
     if (submitting.current) return;
     submitting.current = true;
     setBusy(true);
@@ -122,8 +126,11 @@ export function LaborCheckout() {
       };
       const result = await laborPlaceOrder({ data });
       clear();
-      toast.success(`Pedido de teste #${result.order_number} registrado.`);
-      navigate({ to: "/pedido/$id", params: { id: result.id } });
+      toast.success(`Pedido #${result.order_number} registrado.`);
+      navigate({
+        to: payment === "pix" ? "/checkout/$id" : "/pedido/$id",
+        params: { id: result.id },
+      });
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Não foi possível registrar o pedido.");
       setReview(false);
@@ -148,6 +155,14 @@ export function LaborCheckout() {
   return (
     <SiteShell>
       <div className="mx-auto max-w-4xl px-5 py-8">
+        {catalog && !catalog.ordering_enabled && (
+          <div
+            role="status"
+            className="mb-6 rounded-xl border border-primary/30 bg-primary/5 p-4 text-sm"
+          >
+            Prévia de demonstração. Pedidos ainda não estão disponíveis neste endereço.
+          </div>
+        )}
         <Link
           to="/carrinho"
           className="inline-flex gap-2 items-center text-xs text-muted-foreground"
@@ -287,7 +302,8 @@ export function LaborCheckout() {
             <section className="rounded-2xl border bg-card p-5">
               <h2 className="font-display text-xl mb-4">03. Como pretende pagar?</h2>
               <p className="text-xs text-muted-foreground mb-4">
-                Pagamento presencial pendente. Esta demonstração não processa cobranças.
+                Pix direto por QR Code ou cartão na maquininha. Esta demonstração não processa
+                cobranças.
               </p>
               <div className="flex gap-2 flex-wrap">
                 {(["pix", "credito_entrega", "debito_entrega", "dinheiro"] as const).map((m) => (
@@ -305,6 +321,17 @@ export function LaborCheckout() {
                   </button>
                 ))}
               </div>
+              {payment === "pix" && (
+                <p className="mt-3 text-xs text-muted-foreground">
+                  Ao concluir o pedido, você será levado para a tela com QR Code e Pix Copia e Cola.
+                </p>
+              )}
+              {["credito_entrega", "debito_entrega"].includes(payment) && (
+                <p className="mt-3 text-xs text-muted-foreground">
+                  A loja levará a maquininha. Pague somente na{" "}
+                  {fulfillment === "delivery" ? "entrega" : "retirada"}.
+                </p>
+              )}
               {payment === "dinheiro" && (
                 <div className="mt-4">
                   <CheckoutField
@@ -481,12 +508,18 @@ export function LaborCheckout() {
             )}
             <Button
               className="w-full h-12 mt-5"
-              disabled={busy || !catalog || !catalog.store.is_open || belowMinimum}
+              disabled={
+                busy ||
+                !catalog ||
+                !catalog.ordering_enabled ||
+                !catalog.store.is_open ||
+                belowMinimum
+              }
               {...(review
                 ? { type: "button" as const, onClick: confirm }
                 : { type: "submit" as const, form: "labor-checkout" })}
             >
-              {busy ? "Registrando…" : review ? "Confirmar pedido de teste" : "Revisar meu pedido"}
+              {busy ? "Registrando…" : review ? "Concluir pedido" : "Revisar meu pedido"}
             </Button>
             {belowMinimum && (
               <p role="alert" className="text-sm text-destructive mt-3">

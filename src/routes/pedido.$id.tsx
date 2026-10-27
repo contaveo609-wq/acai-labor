@@ -11,8 +11,9 @@ import {
 } from "@/lib/menu";
 import { getOrder } from "@/lib/orders.functions";
 import { DEMO_MODE } from "@/lib/demo";
-import { laborGetOrder } from "@/lib/labor.functions";
-import { FINANCIAL_LABELS } from "@/lib/vendrex.rules";
+import { laborCatalog, laborGetOrder } from "@/lib/labor.functions";
+import { paymentStatusLabel } from "@/lib/vendrex.rules";
+import type { LaborOrder } from "@/lib/labor.types";
 
 export const Route = createFileRoute("/pedido/$id")({
   head: () =>
@@ -52,12 +53,16 @@ const STEPS = DEMO_MODE
 function OrderPage() {
   const { id } = Route.useParams();
   const fetchOrder = useServerFn(getOrder);
-  const { data: store } = useQuery({ queryKey: ["store"], queryFn: fetchStoreSettings });
+  const { data: store } = useQuery({
+    queryKey: ["order-store", DEMO_MODE],
+    queryFn: async () => (DEMO_MODE ? (await laborCatalog()).store : fetchStoreSettings()),
+  });
   const { data: order, isLoading } = useQuery({
     queryKey: ["order", id],
     queryFn: async () =>
       DEMO_MODE ? laborGetOrder({ data: { id } }) : fetchOrder({ data: { id } }),
-    refetchInterval: DEMO_MODE ? 5000 : 20000,
+    refetchInterval: DEMO_MODE ? 12000 : 20000,
+    refetchOnWindowFocus: true,
   });
 
   if (isLoading) {
@@ -84,6 +89,7 @@ function OrderPage() {
   const currentStep = STEPS.indexOf(order.status as string);
   const wa = store?.whatsapp ?? (DEMO_MODE ? "" : "556681055779");
   const pickup = DEMO_MODE && "fulfillment" in order && order.fulfillment === "pickup";
+  const laborOrder = order as LaborOrder;
 
   return (
     <SiteShell>
@@ -180,8 +186,37 @@ function OrderPage() {
             Pagamento: {PAYMENT_LABEL[order.payment_method as string] ?? order.payment_method}
           </p>
           {"payment_status" in order && (
-            <p className="financial-badge">
-              {FINANCIAL_LABELS[String(order.payment_status || "pendente")]}
+            <p className="financial-badge">{paymentStatusLabel(order as LaborOrder)}</p>
+          )}
+          {DEMO_MODE &&
+            order.payment_method === "pix" &&
+            !["em_analise", "pago"].includes(String(laborOrder.payment_status)) && (
+              <Link
+                to="/checkout/$id"
+                params={{ id: order.id }}
+                className="mt-4 flex h-12 items-center justify-center rounded-full bg-primary font-semibold text-primary-foreground"
+              >
+                Ir para o pagamento Pix
+              </Link>
+            )}
+          {DEMO_MODE &&
+            order.payment_method === "pix" &&
+            laborOrder.payment_status === "em_analise" && (
+              <div className="mt-4 rounded-xl border border-primary/30 bg-primary/5 p-4 text-sm">
+                <h3 className="font-semibold text-primary">Pedido em análise</h3>
+                <p className="mt-1">
+                  Recebemos sua declaração de pagamento. A equipe vai conferir o Pix no Itaú antes
+                  de confirmar.
+                </p>
+                <p className="mt-2 text-xs text-muted-foreground">
+                  Você pode acompanhar aqui as próximas etapas do pedido.
+                </p>
+              </div>
+            )}
+          {DEMO_MODE && ["credito_entrega", "debito_entrega"].includes(order.payment_method) && (
+            <p className="mt-3 rounded-xl bg-primary/5 p-3 text-sm">
+              Pagamento na {pickup ? "retirada" : "entrega"}, na maquininha. Aguarde a conferência
+              da loja.
             </p>
           )}
           {"scheduled_for" in order && order.scheduled_for && (

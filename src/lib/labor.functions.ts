@@ -42,7 +42,13 @@ export const laborSession = createServerFn({ method: "GET" }).handler(async () =
 });
 export const laborLogin = createServerFn({ method: "POST" })
   .validator((v: unknown) =>
-    z.object({ password: z.string().min(12).max(128), setup: z.boolean(), code: z.string().max(32).optional() }).parse(v),
+    z
+      .object({
+        password: z.string().min(12).max(128),
+        setup: z.boolean(),
+        code: z.string().max(32).optional(),
+      })
+      .parse(v),
   )
   .handler(async ({ data }) => {
     const c = await context();
@@ -163,6 +169,26 @@ export const laborGetOrder = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const c = await context();
     return c.service.order(data.id, c.owner, c.admin);
+  });
+export const laborDeclarePix = createServerFn({ method: "POST" })
+  .validator((v: unknown) => z.object({ id: z.string().uuid() }).parse(v))
+  .handler(async ({ data }) => {
+    const c = await context();
+    return c.service.declarePix(data.id, c.owner);
+  });
+export const laborPayment = createServerFn({ method: "POST" })
+  .validator((v: unknown) =>
+    z
+      .object({
+        id: z.string().uuid(),
+        status: z.enum(["pago", "recusado", "pendente"]),
+        expected: z.string().optional(),
+      })
+      .parse(v),
+  )
+  .handler(async ({ data }) => {
+    const c = await context();
+    return c.service.payment(c.admin, data.id, data.status, data.expected);
   });
 
 const supportId = z.object({ id: z.string().uuid() });

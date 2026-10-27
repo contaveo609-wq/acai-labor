@@ -3,9 +3,9 @@ import { createPortal } from "react-dom";
 import { toast } from "sonner";
 import type { AdminSnapshot, LaborOrder } from "@/lib/labor.types";
 import { STATUSES } from "@/lib/labor.schema";
-import { FINANCIAL_LABELS, nextStatuses } from "@/lib/vendrex.rules";
+import { FINANCIAL_LABELS, paymentStatusLabel, nextStatuses } from "@/lib/vendrex.rules";
 import { formatBRL, ORDER_STATUS_LABEL, PAYMENT_LABEL } from "@/lib/menu";
-import { laborAddNote, laborStatus } from "@/lib/labor.functions";
+import { laborAddNote, laborPayment, laborStatus } from "@/lib/labor.functions";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
@@ -57,11 +57,23 @@ export function VendrexOrders({
       setBusy(false);
     }
   }
+  async function changePayment(o: LaborOrder, status: "pago" | "recusado" | "pendente") {
+    setBusy(true);
+    try {
+      await laborPayment({ data: { id: o.id, status, expected: o.payment_status || "pendente" } });
+      await refresh();
+      toast.success("Pagamento atualizado manualmente.");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Falha ao atualizar pagamento.");
+    } finally {
+      setBusy(false);
+    }
+  }
   return (
     <>
       <p className="text-xs text-muted-foreground mb-4">
-        Pedidos de teste · atualização a cada 8 segundos · pagamentos presenciais permanecem
-        pendentes.
+        Pedidos de teste · atualização a cada 8 segundos · confira o recebimento antes de confirmar
+        qualquer pagamento.
       </p>
       <div className="order-filters">
         <select
@@ -137,9 +149,7 @@ export function VendrexOrders({
                     <br />
                     {date(o.created_at)}
                   </p>
-                  <span className="financial-badge">
-                    {FINANCIAL_LABELS[o.payment_status || "pendente"]}
-                  </span>
+                  <span className="financial-badge">{paymentStatusLabel(o)}</span>
                   <p>
                     {o.fulfillment === "pickup" ? "Retirada" : "Entrega"} · {o.order_items.length}{" "}
                     itens
@@ -176,6 +186,73 @@ export function VendrexOrders({
           {order && (
             <>
               <Receipt order={order} store={db.store.store_name} />
+              <section className="order-history">
+                <h3>Pagamento</h3>
+                <p>
+                  {PAYMENT_LABEL[order.payment_method] || order.payment_method} ·{" "}
+                  {paymentStatusLabel(order)}
+                </p>
+                {order.payment_method === "pix" && (
+                  <p>
+                    Chave CNPJ 21572534000162 · confira o valor de {formatBRL(order.total)} no Itaú.
+                    A declaração do cliente não comprova o crédito.
+                  </p>
+                )}
+                {["credito_entrega", "debito_entrega"].includes(order.payment_method) && (
+                  <p>
+                    Levar maquininha para {order.fulfillment === "pickup" ? "retirada" : "entrega"}.
+                  </p>
+                )}
+                {order.payment_declared_at && (
+                  <p>Cliente declarou Pix em {date(order.payment_declared_at)}.</p>
+                )}
+                <div className="flex flex-wrap gap-2 mt-3">
+                  {order.payment_status === "em_analise" && order.payment_method === "pix" && (
+                    <>
+                      <Button disabled={busy} onClick={() => changePayment(order, "pago")}>
+                        Confirmar após conferir Itaú
+                      </Button>
+                      <Button
+                        disabled={busy}
+                        variant="outline"
+                        onClick={() => changePayment(order, "recusado")}
+                      >
+                        Pagamento não localizado
+                      </Button>
+                    </>
+                  )}
+                  {order.payment_status === "recusado" && (
+                    <Button
+                      disabled={busy}
+                      variant="outline"
+                      onClick={() => changePayment(order, "pendente")}
+                    >
+                      Reabrir para declaração
+                    </Button>
+                  )}
+                  {order.payment_status === "pendente" &&
+                    ["credito_entrega", "debito_entrega", "dinheiro"].includes(
+                      order.payment_method,
+                    ) && (
+                      <Button
+                        disabled={
+                          busy ||
+                          (["credito_entrega", "debito_entrega"].includes(order.payment_method) &&
+                            !["entregue", "concluido"].includes(order.status))
+                        }
+                        onClick={() => changePayment(order, "pago")}
+                      >
+                        Confirmar recebimento presencial
+                      </Button>
+                    )}
+                </div>
+                {order.payment_history?.map((event, i) => (
+                  <p key={`${event.at}-${i}`}>
+                    {FINANCIAL_LABELS[event.status] || event.status} · {date(event.at)} ·{" "}
+                    {event.actor}
+                  </p>
+                ))}
+              </section>
               <div className="order-actions">
                 {nextStatuses(order)
                   .filter((s) => s !== "cancelado")
@@ -335,7 +412,7 @@ function Receipt({
       </p>
       <strong>Total: {formatBRL(o.total)}</strong>
       <p>
-        {PAYMENT_LABEL[o.payment_method]} · {FINANCIAL_LABELS[o.payment_status || "pendente"]}
+        {PAYMENT_LABEL[o.payment_method]} · {paymentStatusLabel(o)}
         {o.change_for != null && ` · Troco para ${formatBRL(o.change_for)}`}
       </p>
       {o.notes && <p>Observações: {o.notes}</p>}

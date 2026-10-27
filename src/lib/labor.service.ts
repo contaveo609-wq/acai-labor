@@ -89,6 +89,12 @@ export function createLaborService(
     }
   }
   function mutate<T>(fn: (db: LaborDatabase) => T | Promise<T>): Promise<T> {
+    if (process.env["VERCEL"])
+      return Promise.reject(
+        new Error(
+          "Pedidos e alterações administrativas indisponíveis: armazenamento persistente ainda não configurado para Vercel.",
+        ),
+      );
     const operation = queue.then(async () => {
       await mkdir(directory, { recursive: true });
       const db = await read();
@@ -151,11 +157,8 @@ export function createLaborService(
   });
   const support = createSupportService({ ...base, requireSensitive: security.requireSensitive });
   const ads = createAdsService({ ...base, requireSensitive: security.requireSensitive });
-  let orderPort: (
-    raw: unknown,
-    owner: string,
-    quote: boolean,
-  ) => Promise<{ id: string; order_number: number; total: number; summary: string }>;
+  const orderPort = (raw: unknown, owner: string, quote: boolean) =>
+    service.place(raw, owner, { quote, source: "whatsapp" });
   const whatsapp = createWhatsAppService(
     { ...base, requireSensitive: security.requireSensitive },
     support,
@@ -176,6 +179,7 @@ export function createLaborService(
     async catalog() {
       const db = await read();
       return {
+        ordering_enabled: !process.env["VERCEL"],
         store: db.store,
         categories: db.categories
           .filter((c) => c.is_active)
@@ -446,6 +450,70 @@ export function createLaborService(
         return o;
       });
     },
+    async declarePix(id: string, owner: string | undefined) {
+      if (!owner) throw new Error("Pedido não autorizado.");
+      return mutate((db) => {
+        const o = (db.orders as Array<LaborOrder & { owner?: string }>).find(
+          (item) => item.id === id,
+        );
+        if (!o || o.owner !== hash(owner)) throw new Error("Pedido não autorizado.");
+        if (o.payment_method !== "pix" || o.status === "cancelado")
+          throw new Error("Declaração Pix indisponível para este pedido.");
+        if (o.payment_status === "pago") return { status: "pago" as const };
+        if (o.payment_status === "em_analise") return { status: "em_analise" as const };
+        o.payment_status = "em_analise";
+        o.payment_declared_at = new Date().toISOString();
+        (o.payment_history ??= []).push({
+          status: "em_analise",
+          at: o.payment_declared_at,
+          actor: "cliente",
+        });
+        audit(
+          db,
+          "pedido.pix_declarado",
+          id,
+          "Cliente declarou pagamento; conferência manual necessária",
+          "cliente",
+        );
+        return { status: "em_analise" as const };
+      });
+    },
+    async payment(
+      token: string | undefined,
+      id: string,
+      status: "pago" | "recusado" | "pendente",
+      expected?: string,
+    ) {
+      requireAdmin(token);
+      return mutate((db) => {
+        const o = db.orders.find((item) => item.id === id);
+        if (!o) throw new Error("Pedido não encontrado.");
+        if (expected && o.payment_status !== expected)
+          throw new Error("Pagamento alterado por outro atendimento. Atualize o painel.");
+        if (o.payment_status === status) return o;
+        if (o.status === "cancelado") throw new Error("Pedido cancelado.");
+        if (status === "pendente" && o.payment_status !== "recusado")
+          throw new Error("Só é possível reabrir um pagamento não localizado.");
+        if (status === "recusado" && o.payment_method !== "pix")
+          throw new Error("Pagamento não localizado aplica-se apenas ao Pix.");
+        if (status === "pago" && o.payment_method === "pix" && o.payment_status !== "em_analise")
+          throw new Error("Aguarde a declaração do cliente e confira o Itaú antes de confirmar.");
+        if (
+          status === "pago" &&
+          ["credito_entrega", "debito_entrega"].includes(o.payment_method) &&
+          !["entregue", "concluido"].includes(o.status)
+        )
+          throw new Error("Confirme o cartão somente após a entrega ou retirada concluída.");
+        o.payment_status = status;
+        (o.payment_history ??= []).push({
+          status,
+          at: new Date().toISOString(),
+          actor: "proprietario-local",
+        });
+        audit(db, "pedido.pagamento", id, status);
+        return o;
+      });
+    },
     async addNote(token: string | undefined, id: string, text: string) {
       requireAdmin(token);
       if (!text.trim() || text.length > 1000)
@@ -606,6 +674,7 @@ export function createLaborService(
         )
           throw new Error("O valor para troco deve cobrir o total do pedido.");
         const at = new Date().toISOString();
+        // The request key is scoped to the visitor; order IDs must be unique store-wide.
         const order: LaborOrder & { request_id: string; owner: string; fingerprint: string } = {
           id: randomUUID(),
           order_number: 1001 + db.orders.length,
@@ -613,6 +682,8 @@ export function createLaborService(
           status: "recebido",
           is_test: true,
           payment_status: "pendente",
+          payment_declared_at: null,
+          payment_history: [{ status: "pendente", at, actor: "sistema" }],
           coupon_code: input.coupon?.trim().toUpperCase() || "",
           scheduled_for: input.scheduled_for || null,
           source: options.source || "site",
@@ -688,7 +759,6 @@ export function createLaborService(
       return dto as LaborOrder;
     },
   };
-  orderPort = (raw, owner, quote) => service.place(raw, owner, { quote, source: "whatsapp" });
   return service;
 }
 export const laborService = createLaborService();

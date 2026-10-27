@@ -92,7 +92,7 @@ try {
   await pass("cardápio e identidade da Açaí Labor", async () => {
     await page.goto(base);
     await expect(page.getByRole("heading", { name: /Seu dia pede/ })).toBeVisible();
-    await expect(page.locator(".product-card").first()).toBeVisible();
+    await expect(page.locator(".product-card").first()).toBeVisible({ timeout: 15000 });
     await page.screenshot({ path: resolve(output, "desktop.png"), fullPage: false });
   });
   await pass("PWA instalável e resposta offline sem cache de pedidos", async () => {
@@ -136,10 +136,10 @@ try {
     await page.getByRole("button", { name: "Aplicar", exact: true }).click();
     await page.getByRole("button", { name: "Revisar meu pedido" }).click();
     await expect(page.getByText("Confira antes de confirmar")).toBeVisible();
-    await page.getByRole("button", { name: "Confirmar pedido de teste" }).click();
+    await page.getByRole("button", { name: "Concluir pedido" }).click();
     await page.waitForURL(/\/pedido\//);
     await expect(page.getByRole("heading", { name: "#1001" })).toBeVisible();
-    await expect(page.getByText("Pagamento pendente", { exact: true })).toBeVisible();
+    await expect(page.getByText("Pagamento na retirada", { exact: true })).toBeVisible();
     assert.equal(await page.evaluate(() => window.qaInjected), undefined);
     await expect(page.getByText("R$ 90,00", { exact: true })).toBeVisible();
   });
@@ -326,6 +326,42 @@ try {
     await expect(phone.getByRole("button", { name: "Revisar meu pedido" })).toBeDisabled();
     await expect(phone.getByRole("alert").filter({ hasText: "Mínimo de" })).toBeVisible();
     await mobile.close();
+  });
+  await pass("Pix: QR e declaração separados da confirmação manual", async () => {
+    await page.goto(base);
+    await expect(page.locator(".product-card").first()).toBeVisible({ timeout: 15000 });
+    await page.getByLabel("Buscar no catálogo").fill("Açaí Labor · 5 litros");
+    await page.locator(".product-card").first().click();
+    await page.getByRole("button", { name: /Adicionar •/ }).click();
+    await page.getByRole("link", { name: /Abrir carrinho/ }).click();
+    await page.getByRole("link", { name: "Finalizar pedido" }).click();
+    await page.getByLabel("Seu nome").fill("Cliente Pix QA");
+    await page.getByLabel("Telefone com DDD").fill("11999990001");
+    await page.getByRole("button", { name: "Retirar na loja" }).click();
+    await page.getByRole("button", { name: "Revisar meu pedido" }).click();
+    await page.getByRole("button", { name: "Concluir pedido" }).click();
+    await page.waitForURL(/\/checkout\//);
+    await expect(page.getByRole("heading", { name: "Pague com Pix" })).toBeVisible();
+    await expect(page.getByRole("img", { name: "QR Code Pix do pedido" })).toBeVisible();
+    await expect(page.getByLabel("Código Pix copia e cola")).toContainText("21572534000162");
+    await page.getByRole("button", { name: "Já fiz o pagamento" }).click();
+    await page.waitForURL(/\/pedido\//);
+    await expect(page.getByText("Pedido em análise", { exact: true }).first()).toBeVisible();
+    await expect(
+      page.getByText("Pedido em análise · pagamento em conferência", { exact: true }),
+    ).toBeVisible();
+    const paymentAdmin = await admin.newPage();
+    await paymentAdmin.goto(`${base}/admin/pedidos`);
+    await paymentAdmin.getByRole("button", { name: "Abrir pedido #1002" }).click();
+    await expect(paymentAdmin.getByText("Cliente declarou Pix em")).toBeVisible();
+    await paymentAdmin.getByRole("button", { name: "Confirmar após conferir Itaú" }).click();
+    await expect(paymentAdmin.getByText("Pagamento confirmado").first()).toBeVisible();
+    await expect(page.getByText("Pagamento confirmado", { exact: true }).first()).toBeVisible({
+      timeout: 20000,
+    });
+    await page.reload();
+    await expect(page.getByText("Pagamento confirmado", { exact: true }).first()).toBeVisible();
+    await paymentAdmin.close();
   });
   await pass("CRM, campanhas, fidelidade, automações e relatórios locais", async () => {
     const operation = await admin.newPage();

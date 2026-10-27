@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
@@ -52,6 +52,8 @@ export const Route = createFileRoute("/checkout")({
 });
 
 function Checkout() {
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
+  if (pathname !== "/checkout") return <Outlet />;
   if (DEMO_MODE) return <LaborCheckout />;
   return <OriginalCheckout />;
 }

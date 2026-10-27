@@ -7,6 +7,7 @@ import { tmpdir } from "node:os";
 import { createLaborService } from "../src/lib/labor.service";
 import type { LaborOrderInput } from "../src/lib/labor.schema";
 import testCatalog from "./fixtures/labor-catalog-v1.json";
+import { LABOR_PIX_KEY, pixCode, validCnpj } from "../src/lib/pix";
 
 const workspace = resolve(tmpdir());
 const directory = await mkdtemp(resolve(workspace, "labor-tests-"));
@@ -80,6 +81,7 @@ test("pedido repetido com mesma chave é idempotente", async () => {
     service.place(payload, "cliente-b"),
   ]);
   assert.equal(a.id, b.id);
+  assert.notEqual(a.id, payload.request_id);
 });
 test("cliente não lê o pedido de outro visitante", async () => {
   const o = await service.place(input(), "cliente-c");
@@ -216,4 +218,54 @@ test("dados permanecem após reiniciar o serviço; sessões exigem novo login", 
   assert.equal(data.products.length, 12);
   restarted.logout(newToken);
   assert.equal((await restarted.session(newToken)).authenticated, false);
+});
+test("BR Code usa CNPJ válido, total exato, txid do pedido e CRC verificável", () => {
+  assert.equal(validCnpj(LABOR_PIX_KEY), true);
+  assert.equal(validCnpj("21572534000163"), false);
+  const code = pixCode({ id: "123e4567-e89b-12d3-a456-426614174000", total: 22.98 });
+  assert.match(code, /^00020126/);
+  assert.ok(code.includes("011421572534000162"));
+  assert.ok(code.includes("540522.98"));
+  assert.ok(code.includes("123E4567E89B12D3A45642661"));
+  let crc = 0xffff;
+  for (const byte of Buffer.from(code.slice(0, -4))) {
+    crc ^= byte << 8;
+    for (let i = 0; i < 8; i++)
+      crc = crc & 0x8000 ? ((crc << 1) ^ 0x1021) & 0xffff : (crc << 1) & 0xffff;
+  }
+  assert.equal(code.slice(-4), crc.toString(16).toUpperCase().padStart(4, "0"));
+  assert.throws(() => pixCode({ id: "invalid", total: 10 }));
+  assert.throws(() =>
+    pixCode({ id: "123e4567-e89b-12d3-a456-426614174000", total: 10 }, "21572534000163"),
+  );
+});
+test("Pix declarado não vira pago; só admin confirma após conferência", async () => {
+  const o = await service.place(input(), "pagador-pix");
+  await assert.rejects(service.declarePix(o.id, "outro-cliente"), /não autorizado/);
+  await assert.rejects(service.payment(undefined, o.id, "pago"), /não autorizado/);
+  await assert.rejects(service.payment(token, o.id, "pago"), /Aguarde a declaração/);
+  await service.declarePix(o.id, "pagador-pix");
+  await service.declarePix(o.id, "pagador-pix");
+  let saved = (await service.order(o.id, "pagador-pix"))!;
+  assert.equal(saved.payment_status, "em_analise");
+  assert.equal(saved.payment_history?.filter((e) => e.status === "em_analise").length, 1);
+  await service.payment(token, o.id, "recusado", "em_analise");
+  saved = (await service.order(o.id, "pagador-pix"))!;
+  assert.equal(saved.payment_status, "recusado");
+  await service.declarePix(o.id, "pagador-pix");
+  await service.payment(token, o.id, "pago", "em_analise");
+  assert.equal((await service.order(o.id, "pagador-pix"))!.payment_status, "pago");
+});
+test("crédito e débito na entrega ficam pendentes até confirmação administrativa", async () => {
+  for (const method of ["credito_entrega", "debito_entrega"] as const) {
+    const o = await service.place(input({ payment_method: method }), `pagador-${method}`);
+    assert.equal((await service.order(o.id, `pagador-${method}`))!.payment_status, "pendente");
+    await assert.rejects(service.declarePix(o.id, `pagador-${method}`), /indisponível/);
+    await assert.rejects(service.payment(token, o.id, "pago", "pendente"), /após a entrega/);
+    await service.status(token, o.id, "em_preparacao");
+    await service.status(token, o.id, "pronto");
+    await service.status(token, o.id, "concluido");
+    await service.payment(token, o.id, "pago", "pendente");
+    assert.equal((await service.order(o.id, `pagador-${method}`))!.payment_status, "pago");
+  }
 });

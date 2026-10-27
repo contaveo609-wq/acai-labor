@@ -30,6 +30,8 @@ export type LaborOrder = {
   status: string;
   is_test: boolean;
   payment_status?: "pendente" | "em_analise" | "pago" | "recusado" | "reembolsado";
+  payment_declared_at?: string | null;
+  payment_history?: Array<{ status: string; at: string; actor: string }>;
   scheduled_for?: string | null;
   internal_notes?: Array<{ text: string; at: string; actor: string }>;
   source?: "site" | "whatsapp";

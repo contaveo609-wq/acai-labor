@@ -196,7 +196,7 @@ export const ORDER_STATUS_LABEL: Record<string, string> = {
 };
 
 export const PAYMENT_LABEL: Record<string, string> = {
-  pix: "Pix na entrega/retirada",
+  pix: "Pix direto",
   cartao: "Cartão na entrega",
   credito_entrega: "Crédito na entrega/retirada",
   debito_entrega: "Débito na entrega/retirada",

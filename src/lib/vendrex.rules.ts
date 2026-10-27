@@ -11,12 +11,22 @@ export const UNIT_LABELS: Record<string, string> = {
   combo: "Combo",
 };
 export const FINANCIAL_LABELS: Record<string, string> = {
-  pendente: "Pagamento pendente",
-  em_analise: "Em análise",
-  pago: "Pago",
-  recusado: "Recusado",
+  pendente: "Aguardando pagamento ou declaração",
+  em_analise: "Pedido em análise · pagamento em conferência",
+  pago: "Pagamento confirmado",
+  recusado: "Pagamento não localizado",
   reembolsado: "Reembolsado",
 };
+export function paymentStatusLabel(
+  order: Pick<LaborOrder, "payment_method" | "payment_status" | "fulfillment">,
+): string {
+  if (!order.payment_status || order.payment_status === "pendente") {
+    if (order.payment_method === "pix") return "Aguardando declaração de pagamento";
+    if (["credito_entrega", "debito_entrega", "cartao"].includes(order.payment_method))
+      return `Pagamento na ${order.fulfillment === "pickup" ? "retirada" : "entrega"}`;
+  }
+  return FINANCIAL_LABELS[order.payment_status || "pendente"] || "Pagamento pendente";
+}
 export const DEFAULT_HOURS = Array.from({ length: 7 }, (_, day) => ({
   day,
   enabled: true,
