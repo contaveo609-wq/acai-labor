@@ -150,7 +150,7 @@
   border: 1px solid #ddd0e5;
   border-radius: 12px;
   padding: 9px 14px;
-  color: #623481;
+  color: var(--brand);
   font-size: 12px;
   font-weight: 700;
 }
@@ -162,7 +162,7 @@
 }
 .header-cart > b {
   border-radius: 50%;
-  background: #633185;
+  background: var(--brand);
   color: #fff;
   font-size: 10px;
   padding: 3px 7px;
@@ -1333,7 +1333,7 @@
     gap: 14px;
   }
   .labor-logo {
-    font-size: 22px;
+    font-size: clamp(17px, 4.7vw, 22px);
   }
   .labor-logo small {
     font-size: 6px;
@@ -1747,5 +1747,26 @@
   }
   .labor-theme .menu-categories > button {
     min-height: 38px;
+  }
+}
+@media (max-width: 380px) {
+  .labor-header-inner {
+    padding-inline: 16px;
+    gap: 8px;
+  }
+  .labor-logo {
+    gap: 7px;
+  }
+  .labor-logo img {
+    width: 36px;
+    height: 36px;
+  }
+  .header-cart {
+    margin-left: auto;
+    gap: 6px;
+    padding: 9px;
+  }
+  .header-cart > span {
+    display: none;
   }
 }

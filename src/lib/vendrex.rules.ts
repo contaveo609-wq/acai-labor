@@ -36,7 +36,7 @@ export const DEFAULT_HOURS = Array.from({ length: 7 }, (_, day) => ({
 export const DEFAULT_BRAND = {
   primary_color: "#97084f",
   accent_color: "#9bd13b",
-  hero_title: "Açaí Labor: sabor que refresca o seu dia.",
+  hero_title: "Seu dia pede uma pausa. E muito açaí.",
   hero_description: "Açaí, cupuaçu, sorvetes e muito mais, direto da Labor para o seu pedido.",
 };
 
@@ -59,7 +59,10 @@ export function migrateV2(db: LaborDatabase): LaborDatabase {
   if (!db.store.logo_url) db.store.logo_url = "/images/acai-labor-logo.png";
   if (db.store.primary_color === "#633185") db.store.primary_color = DEFAULT_BRAND.primary_color;
   if (db.store.accent_color === "#b4cb7c") db.store.accent_color = DEFAULT_BRAND.accent_color;
-  if (db.store.hero_title === "Seu dia pede um pouco de açaí.")
+  if (
+    db.store.hero_title === "Seu dia pede um pouco de açaí." ||
+    db.store.hero_title === "Açaí Labor: sabor que refresca o seu dia."
+  )
     db.store.hero_title = DEFAULT_BRAND.hero_title;
   if (db.store.hero_description === "Cremoso na medida. Sabor em cada colherada.")
     db.store.hero_description = DEFAULT_BRAND.hero_description;
