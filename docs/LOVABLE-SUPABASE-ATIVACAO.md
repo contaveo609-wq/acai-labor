@@ -27,7 +27,7 @@ No editor desse projeto: **More → Database → Manage → Settings → Remove 
 
 O Git sync do Lovable cria **um repositório novo** e não importa nem vincula diretamente `contaveo609-wq/acai-labor`. A versão atual do código deve continuar no repositório do usuário. Para usar Lovable Git sync, conecte a conta GitHub em Workspace settings → Git e conecte o novo projeto em Project settings → Git. Depois decida qual repositório será o principal; não substitua nem renomeie o repositório existente sem conferir o histórico.
 
-Importar o ZIP pelo Lovable usa créditos de build e pode recriar o backend interno. Com poucos créditos, conclua primeiro a conexão ao Supabase. O ZIP `acai-labor-supabase-2026-10-28.zip` foi entregue separadamente; envie-o uma única vez no chat do projeto Lovable com a instrução de atualizar o código sem trocar o backend conectado. Confira a estimativa de créditos apresentada pelo Lovable antes de iniciar.
+O recurso oficial **Upload code** importa um ZIP para um **novo projeto** Lovable; ele não atualiza automaticamente o projeto antigo. A importação usa créditos de build e pode configurar o backend interno. Com poucos créditos, não inicie o Upload code até conferir a estimativa, o backend escolhido e se a hospedagem aceita este aplicativo TanStack Start com funções de servidor. O ZIP `acai-labor-supabase-2026-10-28.zip` foi entregue separadamente. O projeto antigo e o repositório GitHub existente não serão vinculados automaticamente por esse recurso.
 
 ## 3. Conferência antes de aceitar pedidos reais
 
