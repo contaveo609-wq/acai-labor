@@ -4,6 +4,7 @@ import { mkdtemp, rm, readFile, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { randomBytes } from "node:crypto";
+import webpush from "web-push";
 import { createLaborService } from "../src/lib/labor.service";
 import { createPushService } from "../src/lib/push.service";
 import { assertLaborRequest } from "../src/lib/labor.runtime";
@@ -87,6 +88,25 @@ test("inscrição push fica cifrada e só aceita endpoint HTTPS", async (t) => {
       subscription.endpoint,
     ),
   );
+  const sent: Array<{ title: string; body: string; tag: string }> = [];
+  const originalSend = webpush.sendNotification;
+  (webpush as typeof webpush & { sendNotification: typeof originalSend }).sendNotification = async (_device, payload) => {
+    sent.push(JSON.parse(String(payload)));
+    return {} as Awaited<ReturnType<typeof originalSend>>;
+  };
+  try {
+    const result = await push.newOrder({
+      id: "72e50d43-1776-4b86-82bc-09d76e8efa03",
+      order_number: 1234,
+      order_items: [{ quantity: 2, product_name: "Açaí 2L" }],
+    } as Parameters<typeof push.newOrder>[0]);
+    assert.deepEqual(result, { sent: 1, failed: 0 });
+    assert.equal(sent.length, 1);
+    assert.match(sent[0]!.body, /2× Açaí 2L/);
+    assert.equal(sent[0]!.tag, "order-72e50d43-1776-4b86-82bc-09d76e8efa03");
+  } finally {
+    webpush.sendNotification = originalSend;
+  }
   assert.equal((await push.unsubscribe(subscription.endpoint)).count, 0);
 });
 

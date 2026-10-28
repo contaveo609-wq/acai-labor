@@ -212,7 +212,7 @@ export function LaborAdmin() {
           <span className="admin-pill">
             {session.storage === "supabase" ? "Dados salvos no Supabase" : "Demonstração · dados locais"}
           </span>
-          {db && <NotificationSignal events={db.audit || []} />}
+          {db && <NotificationSignal events={db.audit || []} orders={db.orders || []} />}
         </div>
         {error && (
           <p role="alert">
@@ -387,10 +387,12 @@ function AdminLogin({
   mfaRequired: boolean;
   onSuccess: () => void;
 }) {
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [code, setCode] = useState("");
   const [setupToken, setSetupToken] = useState("");
+  const [remember, setRemember] = useState(true);
   const [busy, setBusy] = useState(false);
   return (
     <div className="admin-login-wrap">
@@ -406,8 +408,10 @@ function AdminLogin({
           try {
             await laborLogin({
               data: {
+                username: username.trim().toLowerCase(),
                 password,
                 setup: needsSetup,
+                remember,
                 code: mfaRequired ? code.trim() : undefined,
                 setupToken: needsSetup && remote ? setupToken.trim() : undefined,
               },
@@ -425,10 +429,23 @@ function AdminLogin({
         <p>
           {needsSetup
             ? remote
-              ? "Defina a senha do administrador e informe o token privado configurado no servidor."
-              : "Defina a senha do administrador no primeiro acesso."
+              ? "Crie usuário e senha. Informe o token privado configurado no servidor."
+              : "Crie usuário e senha do administrador no primeiro acesso."
             : "Entre para cuidar dos pedidos e do cardápio da Açaí Labor."}
         </p>
+        <label htmlFor="admin-username">Usuário do administrador</label>
+        <Input
+          id="admin-username"
+          type="text"
+          minLength={3}
+          maxLength={40}
+          required
+          autoComplete="username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          placeholder="ex.: acailabor"
+        />
+        {needsSetup && <small>Use letras sem acentos, números, ponto, traço ou sublinhado.</small>}
         <label htmlFor="admin-password">
           {needsSetup ? "Crie uma senha (mínimo 12 caracteres)" : "Senha do administrador"}
         </label>
@@ -483,6 +500,17 @@ function AdminLogin({
               placeholder="Autenticador ou código de recuperação"
             />
           </>
+        )}
+        {remote && (
+          <label className="flex items-center gap-2 mt-4" htmlFor="admin-remember">
+            <input
+              id="admin-remember"
+              type="checkbox"
+              checked={remember}
+              onChange={(e) => setRemember(e.target.checked)}
+            />
+            Continuar conectado por 30 dias neste aparelho
+          </label>
         )}
         <Button className="w-full mt-6" disabled={busy}>
           {busy ? "Validando…" : needsSetup ? "Configurar e entrar" : "Entrar no painel"}

@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from "react";
-import type { AuditEvent } from "@/lib/labor.types";
+import type { AuditEvent, LaborOrder } from "@/lib/labor.types";
 import { pushInfo, pushSubscribe, pushUnsubscribe } from "@/lib/push.functions";
 import { toast } from "sonner";
 function decodeKey(value: string) {
   const padded = value.replace(/-/g, "+").replace(/_/g, "/").padEnd(Math.ceil(value.length / 4) * 4, "=");
   return Uint8Array.from(atob(padded), (character) => character.charCodeAt(0));
 }
-export function NotificationSignal({ events }: { events: AuditEvent[] }) {
+export function NotificationSignal({ events, orders }: { events: AuditEvent[]; orders: LaborOrder[] }) {
   const [enabled, setEnabled] = useState(false),
     [error, setError] = useState(""),
     [background, setBackground] = useState(false),
@@ -32,12 +32,17 @@ export function NotificationSignal({ events }: { events: AuditEvent[] }) {
     seen.current = new Set(events.map((e) => e.id));
     if (enabled && fresh.length) {
       beep();
-      if ("Notification" in window && Notification.permission === "granted")
-        new Notification("Açaí Labor", {
-          body: "Novo evento na loja. Consulte a central de notificações.",
-        });
+      if (!background && "Notification" in window && Notification.permission === "granted")
+        for (const event of fresh) {
+          const order = event.action === "pedido.criado" ? orders.find((item) => item.id === event.resource_id) : undefined;
+          const items = order?.order_items.map((item) => `${item.quantity}× ${item.product_name}`).join(", ");
+          new Notification(order ? `Novo pedido #${order.order_number}` : "Açaí Labor", {
+            body: items?.slice(0, 180) || event.detail.slice(0, 180),
+            tag: order ? `order-${order.id}` : event.id,
+          });
+        }
     }
-  }, [events, enabled]);
+  }, [events, orders, enabled, background]);
   useEffect(
     () => () => {
       void audio.current?.close();

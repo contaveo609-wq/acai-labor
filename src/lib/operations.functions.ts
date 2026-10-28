@@ -8,7 +8,8 @@ async function context() {
   const { assertLaborRequest } = await import("./labor.runtime");
   if (!DEMO_MODE) throw new Error("Painel indisponível.");
   assertLaborRequest(getRequest());
-  return { service: laborService.operations, token: getCookie("labor_admin") };
+  const token = getCookie("labor_admin");
+  return { service: laborService.operations, token: await laborService.activeSession(token) ? token : undefined };
 }
 export const operationsSnapshot = createServerFn({ method: "GET" }).handler(async () => {
   const c = await context();

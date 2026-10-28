@@ -68,6 +68,7 @@ export default {
           ?.slice(16);
         const { laborService } = await import("./lib/labor.service");
         try {
+          if (!await laborService.activeSession(cookie)) throw new Error("Sessão expirada.");
           await laborService.ads.callback(
             cookie,
             url.searchParams.get("code") || "",

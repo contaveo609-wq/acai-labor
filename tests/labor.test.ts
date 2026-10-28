@@ -53,6 +53,22 @@ test("senha validada no servidor e armazenada com hash", async () => {
   assert.ok(!raw.includes(password));
   assert.equal((await service.session(token)).authenticated, true);
 });
+test("admin escolhe usuário no primeiro acesso e precisa dele para entrar", async (t) => {
+  const isolated = await mkdtemp(resolve(workspace, "labor-admin-name-"));
+  t.after(async () => {
+    assert.equal(dirname(isolated), workspace);
+    await rm(isolated, { recursive: true, force: true });
+  });
+  const first = createLaborService(isolated, testCatalog);
+  const initialToken = await first.login("Senha-forte#2026", true, "admin-name", undefined, undefined, "labor-gerente");
+  assert.equal((await first.session(initialToken)).authenticated, true);
+  const restarted = createLaborService(isolated, testCatalog);
+  await assert.rejects(restarted.login("Senha-forte#2026", false, "wrong-name", undefined, undefined, "outro"), /incorreta/);
+  const newToken = await restarted.login("Senha-forte#2026", false, "right-name", undefined, undefined, "LABOR-GERENTE");
+  assert.equal((await restarted.session(newToken)).authenticated, true);
+  await restarted.logout(newToken);
+  assert.equal((await restarted.session(newToken)).authenticated, false);
+});
 test("valores enviados pelo cliente não definem total; desconto e centavos são exatos", async () => {
   const order = await service.place(
     {

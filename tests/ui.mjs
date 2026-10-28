@@ -157,9 +157,12 @@ try {
   await pass("painel exige senha; setup e edição de produto", async () => {
     await panel.goto(`${base}/admin/produtos`, { waitUntil: "domcontentloaded" });
     await expect(panel.getByRole("button", { name: "Configurar e entrar" })).toBeVisible();
+    await panel.getByLabel("Usuário do administrador").fill("qa-admin");
     await panel.getByLabel("Crie uma senha").fill("QA-Only-local#2026");
     await panel.getByLabel("Confirme a senha").fill("QA-Only-local#2026");
     await panel.getByRole("button", { name: "Configurar e entrar" }).click();
+    await expect(panel.getByText("Recebimentos confirmados", { exact: true })).toBeVisible();
+    await panel.reload({ waitUntil: "domcontentloaded" });
     await expect(panel.getByText("Recebimentos confirmados", { exact: true })).toBeVisible();
     await expect(
       panel.getByRole("button", { name: "Receber pedidos neste aparelho" }),

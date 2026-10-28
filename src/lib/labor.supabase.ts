@@ -6,7 +6,7 @@ import type { LaborDatabase } from "./labor.types";
 import { migrateV2 } from "./vendrex.rules";
 
 type StateRow = { version: number | string; payload: LaborDatabase };
-type PasswordRow = { salt: string; password_hash: string };
+type PasswordRow = { username: string; salt: string; password_hash: string };
 const client = supabaseAdmin as any;
 
 export function createLaborSupabaseStorage(storeId: string, seed: LaborDatabase) {
@@ -62,20 +62,21 @@ export function createLaborSupabaseStorage(storeId: string, seed: LaborDatabase)
     throw new Error("Muitos pedidos simultâneos. Tente confirmar novamente.");
   }
 
-  async function passwordRecord(): Promise<{ salt: string; hash: string } | null> {
+  async function passwordRecord(): Promise<{ username: string; salt: string; hash: string } | null> {
     const response = await client
       .from("labor_admin_credentials")
-      .select("salt,password_hash")
+      .select("username,salt,password_hash")
       .eq("store_id", storeId)
       .maybeSingle();
     if (response.error) throw new Error(`Falha ao consultar o administrador: ${response.error.message}`);
     const record = response.data as PasswordRow | null;
-    return record ? { salt: record.salt, hash: record.password_hash } : null;
+    return record ? { username: record.username, salt: record.salt, hash: record.password_hash } : null;
   }
 
-  async function createPasswordRecord(record: { salt: string; hash: string }) {
+  async function createPasswordRecord(record: { username: string; salt: string; hash: string }) {
     const response = await client.from("labor_admin_credentials").insert({
       store_id: storeId,
+      username: record.username,
       salt: record.salt,
       password_hash: record.hash,
     });
@@ -86,5 +87,34 @@ export function createLaborSupabaseStorage(storeId: string, seed: LaborDatabase)
     }
   }
 
-  return { read, mutate, passwordRecord, createPasswordRecord };
+  async function createSession(tokenHash: string, expiresAt: string) {
+    const response = await client.from("labor_admin_sessions").insert({
+      store_id: storeId,
+      token_hash: tokenHash,
+      expires_at: expiresAt,
+    });
+    if (response.error) throw new Error(`Falha ao guardar a sessão: ${response.error.message}`);
+  }
+
+  async function sessionActive(tokenHash: string) {
+    const response = await client
+      .from("labor_admin_sessions")
+      .select("expires_at,revoked_at")
+      .eq("store_id", storeId)
+      .eq("token_hash", tokenHash)
+      .maybeSingle();
+    if (response.error) throw new Error(`Falha ao verificar a sessão: ${response.error.message}`);
+    return Boolean(response.data && !response.data.revoked_at && Date.parse(response.data.expires_at) > Date.now());
+  }
+
+  async function revokeSession(tokenHash: string) {
+    const response = await client
+      .from("labor_admin_sessions")
+      .update({ revoked_at: new Date().toISOString() })
+      .eq("store_id", storeId)
+      .eq("token_hash", tokenHash);
+    if (response.error) throw new Error(`Falha ao encerrar a sessão: ${response.error.message}`);
+  }
+
+  return { read, mutate, passwordRecord, createPasswordRecord, createSession, sessionActive, revokeSession };
 }

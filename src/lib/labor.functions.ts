@@ -17,6 +17,8 @@ async function context() {
   if (!DEMO_MODE) throw new Error("Demonstração local desativada.");
   const request = getRequest();
   assertLaborRequest(request);
+  const storedAdmin = getCookie("labor_admin");
+  const admin = storedAdmin && await laborService.activeSession(storedAdmin) ? storedAdmin : undefined;
   const options = {
     httpOnly: true,
     sameSite: "strict" as const,
@@ -26,7 +28,7 @@ async function context() {
   };
   return {
     service: laborService,
-    admin: getCookie("labor_admin"),
+    admin,
     owner: getCookie("labor_customer"),
     setCookie,
     options,
@@ -45,7 +47,9 @@ export const laborLogin = createServerFn({ method: "POST" })
     z
       .object({
         password: z.string().min(12).max(128),
+        username: z.string().trim().min(3).max(40),
         setup: z.boolean(),
+        remember: z.boolean().default(true),
         code: z.string().max(32).optional(),
         setupToken: z.string().max(128).optional(),
       })
@@ -53,14 +57,17 @@ export const laborLogin = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     const c = await context();
-    const token = await c.service.login(data.password, data.setup, "local", data.code, data.setupToken);
-    c.setCookie("labor_admin", token, c.options);
+    const token = await c.service.login(data.password, data.setup, "local", data.code, data.setupToken, data.username, data.remember);
+    c.setCookie("labor_admin", token, {
+      ...c.options,
+      maxAge: data.remember && process.env["LABOR_STORAGE"] === "supabase" ? 30 * 86400 : 8 * 3600,
+    });
     return { ok: true };
   });
 export const laborLogout = createServerFn({ method: "POST" }).handler(async () => {
   const c = await context();
-  c.service.logout(c.admin);
   c.setCookie("labor_admin", "", { ...c.options, maxAge: 0 });
+  await c.service.logout(c.admin);
   return { ok: true };
 });
 export const laborSnapshot = createServerFn({ method: "GET" }).handler(async () => {

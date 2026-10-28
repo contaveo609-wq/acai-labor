@@ -5,7 +5,8 @@ async function context() {
   const { assertLaborRequest } = await import("./labor.runtime");
   const { laborService } = await import("./labor.service");
   assertLaborRequest(getRequest());
-  return { service: laborService.ads, token: getCookie("labor_admin") };
+  const token = getCookie("labor_admin");
+  return { service: laborService.ads, token: await laborService.activeSession(token) ? token : undefined };
 }
 export const adsDispatch = createServerFn({ method: "POST" }).handler(async () => {
   const c = await context();

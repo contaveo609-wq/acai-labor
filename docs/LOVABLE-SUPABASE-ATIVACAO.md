@@ -1,7 +1,7 @@
 # Ativar Açaí Labor no Lovable com o Supabase próprio
 
 Projeto Supabase: `njhlctqpqgbdqrgursjm` (`https://njhlctqpqgbdqrgursjm.supabase.co`).
-A migração `20261028183729_acai_labor_persistent_store.sql` já foi aplicada e os 122 produtos já estão na tabela `labor_state` para a loja `acai-labor`.
+As migrações `20261028183729_acai_labor_persistent_store.sql` e `20261028225209_admin_username_sessions.sql` já foram aplicadas. Os 122 produtos estão em `labor_state` para a loja `acai-labor`.
 
 ## 1. Segredos do servidor
 
@@ -16,6 +16,7 @@ No painel de hospedagem da versão publicada, cadastre as variáveis abaixo **so
 | `LABOR_ADMIN_SETUP_TOKEN` | Segredo aleatório com pelo menos 32 caracteres, usado uma vez para criar a senha do admin |
 | `LABOR_SESSION_SECRET` | Outro segredo aleatório, diferente do token anterior, para assinar sessões |
 | `LABOR_PUBLIC_BASE_URL` | URL HTTPS final da loja, sem barra no fim |
+| `LABOR_VAPID_SUBJECT` | E-mail da empresa no formato `mailto:contato@seu-dominio.com` para notificações push |
 
 Se o Lovable permitir segredos de execução para o app TanStack Start, cadastre esses valores em **More → Secrets**. Confirme que aparecem em `process.env` apenas no lado servidor. Se a interface guardar segredos exclusivamente para Edge Functions, não publique o app com essa configuração: esse código precisa dos segredos nas funções do servidor TanStack Start.
 
@@ -34,8 +35,9 @@ O recurso oficial **Upload code** importa um ZIP para um **novo projeto** Lovabl
 1. Abra a loja publicada e confirme que o catálogo está habilitado.
 2. Faça um pedido de **teste**, selecione Pix e abra o QR Code e o código copia e cola. Não transfira dinheiro no teste.
 3. Clique “Já fiz o pagamento”. O pedido deve entrar como **Em análise**, com pagamento pendente.
-4. Abra `/admin`; no primeiro acesso, use o token de configuração cadastrado no servidor para criar a senha. Confira o pedido e seus itens em Pedidos.
-5. Só marque o pagamento como confirmado após conferir o recebimento fora do sistema. Não há integração com gateway; clicar “Já fiz o pagamento” é uma declaração do cliente, não uma confirmação bancária.
-6. Em Admin → Chatbot, configure limites diário, por minuto e por conversa do chatbot do site. Os limites são compartilhados entre instâncias quando `LABOR_STORAGE=supabase`.
+4. Abra `/admin`; no primeiro acesso, crie **usuário e senha** e informe o token de configuração cadastrado no servidor. Confira o pedido e seus itens em Pedidos. Marque “Continuar conectado por 30 dias” se quiser abrir o painel diretamente neste aparelho. Saia do painel para revogar a sessão.
+5. Instale a loja como PWA, abra o painel e clique **Receber pedidos neste aparelho**. Permita as notificações do navegador. Faça um pedido de teste e confira **um aviso por pedido**, com os produtos, inclusive com a aba fechada. HTTPS e suporte a Push do navegador são necessários.
+6. Só marque o pagamento como confirmado após conferir o recebimento fora do sistema. Não há integração com gateway; clicar “Já fiz o pagamento” é uma declaração do cliente, não uma confirmação bancária.
+7. Em Admin → Chatbot, configure limites diário, por minuto e por conversa do chatbot do site. Os limites são compartilhados entre instâncias quando `LABOR_STORAGE=supabase`.
 
 Não ative pedidos reais até confirmar que o painel mostra **Dados salvos no Supabase** e que um pedido de teste permanece após reiniciar o servidor.

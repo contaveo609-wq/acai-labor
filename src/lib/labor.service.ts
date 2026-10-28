@@ -141,6 +141,10 @@ export function createLaborService(
     const expected = createHmac("sha256", secret).update(message).digest("hex");
     return timingSafeEqual(Buffer.from(expected, "hex"), Buffer.from(match[3]!, "hex"));
   };
+  async function activeSession(token?: string) {
+    if (!authorized(token)) return false;
+    return remoteStorage ? remoteStorage.sessionActive(hash(token!)) : true;
+  }
   function requireAdmin(token: string | undefined) {
     if (!authorized(token)) throw new Error("Acesso administrativo não autorizado. Faça login.");
   }
@@ -148,6 +152,7 @@ export function createLaborService(
     if (remoteStorage) return remoteStorage.passwordRecord();
     try {
       return JSON.parse(await readFile(join(directory, "admin.json"), "utf8")) as {
+        username?: string;
         salt: string;
         hash: string;
       };
@@ -186,6 +191,7 @@ export function createLaborService(
     whatsapp,
     operations,
     push,
+    activeSession,
     async catalog() {
       const db = await read();
       return {
@@ -218,18 +224,27 @@ export function createLaborService(
     },
     async session(token?: string) {
       return {
-        authenticated: authorized(token),
+        authenticated: await activeSession(token),
         needsSetup: !(await passwordRecord()),
         mfaRequired: await security.loginRequired(),
         storage: remote ? "supabase" as const : "local" as const,
       };
     },
-    async login(password: string, setup: boolean, client = "local", code?: string, setupToken?: string) {
+    async login(password: string, setup: boolean, client = "local", code?: string, setupToken?: string, username = "admin", remember = true) {
       const failed = attempts.get(client);
       if (failed && failed.until > Date.now() && failed.count >= 5)
         throw new Error("Muitas tentativas. Aguarde 15 minutos.");
+      const normalizedUsername = username.trim().toLowerCase();
+      if (!/^[a-z0-9._-]{3,40}$/.test(normalizedUsername))
+        throw new Error("Usuário deve ter entre 3 e 40 letras, números, pontos, traços ou sublinhados.");
       if (password.length < 12 || password.length > 128)
         throw new Error("Use uma senha entre 12 e 128 caracteres.");
+      const rejectCredentials = () => {
+        const previous = attempts.get(client);
+        const count = previous && previous.until > Date.now() ? previous.count : 0;
+        attempts.set(client, { count: count + 1, until: Date.now() + 900000 });
+        throw new Error("Credencial incorreta.");
+      };
       if (remoteStorage) {
         let record = await remoteStorage.passwordRecord();
         if (!record) {
@@ -246,26 +261,26 @@ export function createLaborService(
           )
             throw new Error("Token de configuração inválido.");
           const salt = randomBytes(16).toString("hex");
-          record = { salt, hash: scryptSync(password, salt, 64).toString("hex") };
+          record = { username: normalizedUsername, salt, hash: scryptSync(password, salt, 64).toString("hex") };
           await remoteStorage.createPasswordRecord(record);
         } else if (setup) {
           throw new Error("O administrador já está configurado. Entre com sua senha.");
         }
-        if (!timingSafeEqual(Buffer.from(record.hash, "hex"), scryptSync(password, record.salt, 64))) {
-          const n = failed && failed.until > Date.now() ? failed.count : 0;
-          attempts.set(client, { count: n + 1, until: Date.now() + 900000 });
-          throw new Error("Senha incorreta.");
-        }
+        if (record.username !== normalizedUsername ||
+          !timingSafeEqual(Buffer.from(record.hash, "hex"), scryptSync(password, record.salt, 64)))
+          rejectCredentials();
         await security.verifyLoginCode(code, client);
         attempts.delete(client);
-        const expires = String(Date.now() + 8 * 3600000);
+        const expires = String(Date.now() + (remember ? 30 * 86400000 : 8 * 3600000));
         const nonce = randomBytes(32).toString("hex");
         const secret = process.env["LABOR_SESSION_SECRET"] || process.env["SUPABASE_SERVICE_ROLE_KEY"];
         if (!secret) throw new Error("Configure a chave do servidor antes de acessar o painel.");
         const signature = createHmac("sha256", secret)
           .update(`${storeId}:${expires}:${nonce}`)
           .digest("hex");
-        return `${expires}.${nonce}.${signature}`;
+        const token = `${expires}.${nonce}.${signature}`;
+        await remoteStorage.createSession(hash(token), new Date(Number(expires)).toISOString());
+        return token;
       }
       // Serialize first setup, so concurrent requests cannot replace the password.
       await mutate(async () => {
@@ -276,20 +291,16 @@ export function createLaborService(
         if (!record) {
           if (!setup) throw new Error("Defina sua senha no primeiro acesso.");
           const salt = randomBytes(16).toString("hex");
-          record = { salt, hash: scryptSync(password, salt, 64).toString("hex") };
+          record = { username: normalizedUsername, salt, hash: scryptSync(password, salt, 64).toString("hex") };
           await writeFile(join(directory, "admin.json"), JSON.stringify(record), {
             mode: 0o600,
             flag: "wx",
           });
         } else if (setup)
           throw new Error("O administrador já está configurado. Entre com sua senha.");
-        if (
-          !timingSafeEqual(Buffer.from(record.hash, "hex"), scryptSync(password, record.salt, 64))
-        ) {
-          const n = failed && failed.until > Date.now() ? failed.count : 0;
-          attempts.set(client, { count: n + 1, until: Date.now() + 900000 });
-          throw new Error("Senha incorreta.");
-        }
+        if ((record.username || "admin") !== normalizedUsername ||
+          !timingSafeEqual(Buffer.from(record.hash, "hex"), scryptSync(password, record.salt, 64)))
+          rejectCredentials();
       });
       await security.verifyLoginCode(code, client);
       attempts.delete(client);
@@ -298,8 +309,9 @@ export function createLaborService(
       sessions.set(hash(token), Date.now() + 8 * 3600000);
       return token;
     },
-    logout(token?: string) {
+    async logout(token?: string) {
       if (token) sessions.delete(hash(token));
+      if (token && remoteStorage) await remoteStorage.revokeSession(hash(token));
     },
     async snapshot(token?: string) {
       requireAdmin(token);
@@ -590,6 +602,7 @@ export function createLaborService(
       const fingerprint = hash(JSON.stringify(input));
       let createdOrder: LaborOrder | undefined;
       const placed = await mutate((db) => {
+        createdOrder = undefined;
         const prior = (
           db.orders as Array<
             LaborOrder & { request_id?: string; owner?: string; fingerprint?: string }
