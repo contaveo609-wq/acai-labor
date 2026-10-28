@@ -1,7 +1,7 @@
 // Server-only local demo adapter. It deliberately has no Supabase credentials.
 import { readFile, writeFile, rename, mkdir, rm } from "node:fs/promises";
 import { resolve, join } from "node:path";
-import { randomBytes, randomUUID, scryptSync, timingSafeEqual, createHash } from "node:crypto";
+import { randomBytes, randomUUID, scryptSync, timingSafeEqual, createHash, createHmac } from "node:crypto";
 import seed from "../data/labor-catalog.json";
 import type { LaborDatabase, LaborOrder } from "./labor.types";
 import { createSupportService } from "./support.service";
@@ -10,6 +10,7 @@ import { createWhatsAppService } from "./whatsapp.service";
 import { createOperationsService, normalizePhone } from "./operations.service";
 import { createPushService } from "./push.service";
 import { createSupportVault } from "./support.secrets";
+import { createLaborSupabaseStorage } from "./labor.supabase";
 import { createAdsService } from "./ads.service";
 import {
   stockSchema,
@@ -48,11 +49,16 @@ export function createLaborService(
   let queue: Promise<unknown> = Promise.resolve();
   const sessions = new Map<string, number>();
   const attempts = new Map<string, { count: number; until: number }>();
+  const remote = process.env["LABOR_STORAGE"] === "supabase";
+  const remoteStorage = remote ? createLaborSupabaseStorage(storeId, initialCatalog) : null;
   const encryptedData =
-    process.env["LABOR_ENCRYPT_DATA"] === "1" ? createSupportVault(directory, "database") : null;
+    !remote && process.env["LABOR_ENCRYPT_DATA"] === "1"
+      ? createSupportVault(directory, "database")
+      : null;
   let encryptedCache: LaborDatabase | undefined;
   let encryptedLoad: Promise<LaborDatabase> | undefined;
   async function read(): Promise<LaborDatabase> {
+    if (remoteStorage) return remoteStorage.read();
     if (encryptedData && encryptedCache) return clone(encryptedCache);
     if (encryptedData) {
       encryptedLoad ??= load()
@@ -89,6 +95,7 @@ export function createLaborService(
     }
   }
   function mutate<T>(fn: (db: LaborDatabase) => T | Promise<T>): Promise<T> {
+    if (remoteStorage) return remoteStorage.mutate(fn);
     const operation = queue.then(async () => {
       await mkdir(directory, { recursive: true });
       const db = await read();
@@ -124,12 +131,21 @@ export function createLaborService(
       detail,
     });
   };
-  const authorized = (token: string | undefined) =>
-    !!token && (sessions.get(hash(token)) || 0) > Date.now();
+  const authorized = (token: string | undefined) => {
+    if (!token) return false;
+    if (!remote) return (sessions.get(hash(token)) || 0) > Date.now();
+    const match = /^(\d{13})\.([a-f0-9]{64})\.([a-f0-9]{64})$/.exec(token);
+    const secret = process.env["LABOR_SESSION_SECRET"] || process.env["SUPABASE_SERVICE_ROLE_KEY"];
+    if (!match || !secret || Number(match[1]) <= Date.now()) return false;
+    const message = `${storeId}:${match[1]}:${match[2]}`;
+    const expected = createHmac("sha256", secret).update(message).digest("hex");
+    return timingSafeEqual(Buffer.from(expected, "hex"), Buffer.from(match[3]!, "hex"));
+  };
   function requireAdmin(token: string | undefined) {
     if (!authorized(token)) throw new Error("Acesso administrativo não autorizado. Faça login.");
   }
   async function passwordRecord() {
+    if (remoteStorage) return remoteStorage.passwordRecord();
     try {
       return JSON.parse(await readFile(join(directory, "admin.json"), "utf8")) as {
         salt: string;
@@ -173,9 +189,7 @@ export function createLaborService(
     async catalog() {
       const db = await read();
       return {
-        // Vercel uses /tmp for this demo adapter. This enables the complete
-        // checkout/Pix flow while Supabase persistence is being configured.
-        ordering_enabled: true,
+        ordering_enabled: remote || !process.env["VERCEL"],
         store: db.store,
         categories: db.categories
           .filter((c) => c.is_active)
@@ -207,14 +221,52 @@ export function createLaborService(
         authenticated: authorized(token),
         needsSetup: !(await passwordRecord()),
         mfaRequired: await security.loginRequired(),
+        storage: remote ? "supabase" as const : "local" as const,
       };
     },
-    async login(password: string, setup: boolean, client = "local", code?: string) {
+    async login(password: string, setup: boolean, client = "local", code?: string, setupToken?: string) {
       const failed = attempts.get(client);
       if (failed && failed.until > Date.now() && failed.count >= 5)
         throw new Error("Muitas tentativas. Aguarde 15 minutos.");
       if (password.length < 12 || password.length > 128)
         throw new Error("Use uma senha entre 12 e 128 caracteres.");
+      if (remoteStorage) {
+        let record = await remoteStorage.passwordRecord();
+        if (!record) {
+          if (!setup) throw new Error("Defina sua senha no primeiro acesso.");
+          const expectedSetup = process.env["LABOR_ADMIN_SETUP_TOKEN"];
+          if (!expectedSetup)
+            throw new Error("Configure LABOR_ADMIN_SETUP_TOKEN no servidor para criar o administrador.");
+          if (
+            !setupToken ||
+            !timingSafeEqual(
+              Buffer.from(hash(setupToken), "hex"),
+              Buffer.from(hash(expectedSetup), "hex"),
+            )
+          )
+            throw new Error("Token de configuração inválido.");
+          const salt = randomBytes(16).toString("hex");
+          record = { salt, hash: scryptSync(password, salt, 64).toString("hex") };
+          await remoteStorage.createPasswordRecord(record);
+        } else if (setup) {
+          throw new Error("O administrador já está configurado. Entre com sua senha.");
+        }
+        if (!timingSafeEqual(Buffer.from(record.hash, "hex"), scryptSync(password, record.salt, 64))) {
+          const n = failed && failed.until > Date.now() ? failed.count : 0;
+          attempts.set(client, { count: n + 1, until: Date.now() + 900000 });
+          throw new Error("Senha incorreta.");
+        }
+        await security.verifyLoginCode(code, client);
+        attempts.delete(client);
+        const expires = String(Date.now() + 8 * 3600000);
+        const nonce = randomBytes(32).toString("hex");
+        const secret = process.env["LABOR_SESSION_SECRET"] || process.env["SUPABASE_SERVICE_ROLE_KEY"];
+        if (!secret) throw new Error("Configure a chave do servidor antes de acessar o painel.");
+        const signature = createHmac("sha256", secret)
+          .update(`${storeId}:${expires}:${nonce}`)
+          .digest("hex");
+        return `${expires}.${nonce}.${signature}`;
+      }
       // Serialize first setup, so concurrent requests cannot replace the password.
       await mutate(async () => {
         const failed = attempts.get(client);
@@ -531,6 +583,8 @@ export function createLaborService(
       owner: string,
       options: { quote?: boolean; source?: "site" | "whatsapp" } = {},
     ) {
+      if (!remote && !options.quote && process.env["VERCEL"])
+        throw new Error("O armazenamento persistente ainda não está configurado para receber pedidos.");
       if (!owner) throw new Error("Identificação do visitante necessária.");
       const input = laborOrderSchema.parse(raw);
       const fingerprint = hash(JSON.stringify(input));

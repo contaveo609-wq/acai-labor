@@ -135,7 +135,7 @@ export function LaborAdmin() {
       await laborSaveProduct({ data: productSchema.parse(p) });
       await refresh();
       setEditing(null);
-      toast.success("Produto salvo no servidor local.");
+      toast.success("Produto salvo.");
     } catch (e) {
       toast.error(errorMessage(e));
     } finally {
@@ -155,13 +155,14 @@ export function LaborAdmin() {
   if (isError)
     return (
       <div className="admin-login-wrap">
-        <p>Não foi possível conectar ao servidor local. Atualize a página.</p>
+        <p>Não foi possível conectar ao servidor. Atualize a página.</p>
       </div>
     );
   if (!session?.authenticated)
     return (
       <AdminLogin
         needsSetup={session?.needsSetup || false}
+        remote={session?.storage === "supabase"}
         mfaRequired={session?.mfaRequired || false}
         onSuccess={async () => {
           await qc.invalidateQueries({ queryKey: ["labor-session"] });
@@ -208,7 +209,9 @@ export function LaborAdmin() {
             <h2>{navItems.find((n) => n[0] === tab)?.[1]}</h2>
             <p>Seu negócio, cuidado em cada detalhe.</p>
           </div>
-          <span className="admin-pill">Demonstração · dados locais</span>
+          <span className="admin-pill">
+            {session.storage === "supabase" ? "Dados salvos no Supabase" : "Demonstração · dados locais"}
+          </span>
           {db && <NotificationSignal events={db.audit || []} />}
         </div>
         {error && (
@@ -244,8 +247,7 @@ export function LaborAdmin() {
               <section className="admin-box">
                 <h3>Registro de alterações</h3>
                 <p className="text-xs text-muted-foreground mb-5">
-                  Proprietário local · registros criados no servidor, sem opção de alteração pela
-                  interface.
+                  Registros criados no servidor, sem opção de alteração pela interface.
                 </p>
                 <div className="admin-table-wrap">
                   <table className="admin-table">
@@ -376,16 +378,19 @@ export function LaborAdmin() {
 
 function AdminLogin({
   needsSetup,
+  remote,
   mfaRequired,
   onSuccess,
 }: {
   needsSetup: boolean;
+  remote: boolean;
   mfaRequired: boolean;
   onSuccess: () => void;
 }) {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [code, setCode] = useState("");
+  const [setupToken, setSetupToken] = useState("");
   const [busy, setBusy] = useState(false);
   return (
     <div className="admin-login-wrap">
@@ -400,7 +405,12 @@ function AdminLogin({
           setBusy(true);
           try {
             await laborLogin({
-              data: { password, setup: needsSetup, code: mfaRequired ? code.trim() : undefined },
+              data: {
+                password,
+                setup: needsSetup,
+                code: mfaRequired ? code.trim() : undefined,
+                setupToken: needsSetup && remote ? setupToken.trim() : undefined,
+              },
             });
             onSuccess();
           } catch (error) {
@@ -414,7 +424,9 @@ function AdminLogin({
         <h1>{needsSetup ? "Sua loja começa aqui." : "Que bom ter você aqui."}</h1>
         <p>
           {needsSetup
-            ? "Defina a senha do administrador no primeiro acesso. Ela será protegida no servidor local."
+            ? remote
+              ? "Defina a senha do administrador e informe o token privado configurado no servidor."
+              : "Defina a senha do administrador no primeiro acesso."
             : "Entre para cuidar dos pedidos e do cardápio da Açaí Labor."}
         </p>
         <label htmlFor="admin-password">
@@ -442,6 +454,20 @@ function AdminLogin({
               value={confirm}
               onChange={(e) => setConfirm(e.target.value)}
             />
+            {remote && (
+              <>
+                <label htmlFor="admin-setup-token">Token de configuração</label>
+                <Input
+                  id="admin-setup-token"
+                  type="password"
+                  maxLength={128}
+                  required
+                  autoComplete="off"
+                  value={setupToken}
+                  onChange={(e) => setSetupToken(e.target.value)}
+                />
+              </>
+            )}
           </>
         )}
         {mfaRequired && !needsSetup && (

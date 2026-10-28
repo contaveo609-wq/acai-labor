@@ -328,7 +328,7 @@ export function LaborSupportSettings() {
           />
         </label>
         <label>
-          Teto diário de requisições ao Gemini (UTC)
+          Teto global diário de requisições ao Gemini (UTC)
           <input
             type="number"
             min={1}
@@ -337,9 +337,39 @@ export function LaborSupportSettings() {
             onChange={(e) => setConfig({ ...config, dailyLimit: Number(e.target.value) })}
           />
         </label>
-        <small>1.500 é limite interno da loja. Cota real depende do modelo e da conta Google.</small>
+        <small>Este teto soma o chatbot do site e o WhatsApp. A cota real depende da conta Google.</small>
         <label>
-          Limite de respostas por conversa
+          Limite diário do chatbot do site (UTC)
+          <input
+            type="number"
+            min={1}
+            max={10000}
+            value={config.siteDailyLimit}
+            onChange={(e) => setConfig({ ...config, siteDailyLimit: Number(e.target.value) })}
+          />
+        </label>
+        <label>
+          Limite do site por minuto (UTC)
+          <input
+            type="number"
+            min={1}
+            max={1000}
+            value={config.siteMinuteLimit}
+            onChange={(e) => setConfig({ ...config, siteMinuteLimit: Number(e.target.value) })}
+          />
+        </label>
+        <label>
+          Limite de respostas por conversa no site
+          <input
+            type="number"
+            min={1}
+            max={100}
+            value={config.siteConversationLimit}
+            onChange={(e) => setConfig({ ...config, siteConversationLimit: Number(e.target.value) })}
+          />
+        </label>
+        <label>
+          Limite de respostas por conversa no WhatsApp
           <input
             type="number"
             min={1}
@@ -524,7 +554,8 @@ export function LaborSupportSettings() {
           />
         </label>
         <div className="support-stats">
-          <span>{today?.requests || 0} requisições hoje</span>
+          <span>{today?.requests || 0} requisições hoje no total</span>
+          <span>{today?.siteRequests || 0} requisições hoje no site</span>
           <span>{today?.tokens || 0} tokens reportados</span>
           <span>{today?.errors || 0} falhas</span>
           <span>{today?.discarded || 0} respostas descartadas</span>

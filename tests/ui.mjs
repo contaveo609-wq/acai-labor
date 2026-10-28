@@ -82,7 +82,7 @@ try {
     await delay(500);
   }
   assert.ok(ready, "Local test server did not start");
-  browser = await chromium.launch({ channel: "msedge", headless: true });
+  browser = await chromium.launch({ headless: true });
   const customer = await browser.newContext({
     viewport: { width: 1365, height: 900 },
     reducedMotion: "reduce",
@@ -90,7 +90,7 @@ try {
   page = await customer.newPage();
   watch(page);
   await pass("cardápio e identidade da Açaí Labor", async () => {
-    await page.goto(base);
+    await page.goto(base, { waitUntil: "domcontentloaded" });
     await expect(page.getByRole("heading", { name: /Seu dia pede/ })).toBeVisible();
     await expect(page.locator(".product-card").first()).toBeVisible({ timeout: 15000 });
     await page.screenshot({ path: resolve(output, "desktop.png"), fullPage: false });
@@ -147,7 +147,7 @@ try {
   await pass("IDOR: outro visitante não consegue consultar o pedido", async () => {
     const other = await browser.newContext();
     const privatePage = await other.newPage();
-    await privatePage.goto(orderUrl);
+    await privatePage.goto(orderUrl, { waitUntil: "domcontentloaded" });
     await expect(privatePage.getByText("Pedido não encontrado.")).toBeVisible();
     await other.close();
   });
@@ -155,7 +155,7 @@ try {
   const panel = await admin.newPage();
   watch(panel);
   await pass("painel exige senha; setup e edição de produto", async () => {
-    await panel.goto(`${base}/admin/produtos`);
+    await panel.goto(`${base}/admin/produtos`, { waitUntil: "domcontentloaded" });
     await expect(panel.getByRole("button", { name: "Configurar e entrar" })).toBeVisible();
     await panel.getByLabel("Crie uma senha").fill("QA-Only-local#2026");
     await panel.getByLabel("Confirme a senha").fill("QA-Only-local#2026");
@@ -216,7 +216,7 @@ try {
     await panel.screenshot({ path: resolve(output, "admin.png"), fullPage: true });
   });
   await pass("configuração visual e regras comerciais persistem", async () => {
-    await panel.getByRole("button", { name: "Minha loja", exact: true }).click();
+    await panel.getByRole("button", { name: "Página & identidade", exact: true }).click();
     await panel.getByLabel("Pedido mínimo (R$)", { exact: true }).fill("25");
     await panel.getByLabel("Permitir agendamento", { exact: true }).check();
     await panel
@@ -230,7 +230,7 @@ try {
     await expect(panel.getByText("loja.salva", { exact: true })).toBeVisible();
   });
   await pass("chat: catálogo, memória persistente e atendimento humano no painel", async () => {
-    await page.goto(base);
+    await page.goto(base, { waitUntil: "domcontentloaded" });
     await page.getByRole("button", { name: "Ajuda com o catálogo", exact: true }).click();
     const chat = page.getByRole("region", { name: "Atendimento Açaí Labor" });
     await expect(chat.getByText(/Sou a assistente virtual/)).toBeVisible();
@@ -294,7 +294,7 @@ try {
     });
     const phone = await mobile.newPage();
     watch(phone);
-    await phone.goto(base);
+    await phone.goto(base, { waitUntil: "domcontentloaded" });
     await expect(phone.locator(".product-card").first()).toBeVisible();
     await phone.getByRole("button", { name: "Ajuda com o catálogo", exact: true }).click();
     const chat = phone.getByRole("region", { name: "Atendimento Açaí Labor" });
@@ -328,7 +328,7 @@ try {
     await mobile.close();
   });
   await pass("Pix: QR e declaração separados da confirmação manual", async () => {
-    await page.goto(base);
+    await page.goto(base, { waitUntil: "domcontentloaded" });
     await expect(page.locator(".product-card").first()).toBeVisible({ timeout: 15000 });
     await page.getByLabel("Buscar no catálogo").fill("Açaí Labor · 5 litros");
     await page.locator(".product-card").first().click();
@@ -351,7 +351,7 @@ try {
       page.getByText("Pedido em análise · pagamento em conferência", { exact: true }),
     ).toBeVisible();
     const paymentAdmin = await admin.newPage();
-    await paymentAdmin.goto(`${base}/admin/pedidos`);
+    await paymentAdmin.goto(`${base}/admin/pedidos`, { waitUntil: "domcontentloaded" });
     await paymentAdmin.getByRole("button", { name: "Abrir pedido #1002" }).click();
     await expect(paymentAdmin.getByText("Cliente declarou Pix em")).toBeVisible();
     await paymentAdmin.getByRole("button", { name: "Confirmar após conferir Itaú" }).click();
@@ -376,7 +376,7 @@ try {
       ["integracoes", "WhatsApp Business Platform"],
       ["whatsapp", "Conexão ainda não validada"],
     ]) {
-      await operation.goto(`${base}/admin/${route}`);
+      await operation.goto(`${base}/admin/${route}`, { waitUntil: "domcontentloaded" });
       await expect(operation.getByText(label, { exact: false }).first()).toBeVisible();
       assert.ok(
         await operation.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
@@ -386,7 +386,7 @@ try {
     }
     await operation.setViewportSize({ width: 390, height: 844 });
     for (const route of ["clientes", "whatsapp", "relatorios"]) {
-      await operation.goto(`${base}/admin/${route}`);
+      await operation.goto(`${base}/admin/${route}`, { waitUntil: "domcontentloaded" });
       await expect(operation.locator(".labor-admin-main")).toBeVisible();
       const fits = await operation.evaluate(
         () => document.documentElement.scrollWidth <= innerWidth,
@@ -422,7 +422,7 @@ try {
     await operation.close();
   });
   await pass("tráfego pago: rascunho real e campanhas WhatsApp preservadas", async () => {
-    await panel.goto(`${base}/admin/campanhas`);
+    await panel.goto(`${base}/admin/campanhas`, { waitUntil: "domcontentloaded" });
     await expect(panel.getByRole("heading", { name: "Central de tráfego pago" })).toBeVisible();
     await panel.getByRole("button", { name: "Criar campanha", exact: true }).click();
     await panel.getByLabel("Nome", { exact: true }).fill("Campanha QA sem envio Meta");

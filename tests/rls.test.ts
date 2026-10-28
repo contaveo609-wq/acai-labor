@@ -9,7 +9,7 @@ create function auth.uid() returns uuid language sql stable as $$ select nullif(
 grant usage on schema auth,public to anon,authenticated;
 grant execute on function auth.uid() to anon,authenticated;`);
 for (const file of ["20261016010000_delivery_multistore.sql", "20261017010000_vendrex_phase1.sql"])
-  await db.exec(await readFile(new URL(`../supabase/migrations/${file}`, import.meta.url), "utf8"));
+  await db.exec(await readFile(new URL(`../docs/legacy-skina-migrations/${file}`, import.meta.url), "utf8"));
 const id = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
 const [a, b, ua, ub, uc, ca, cb, pa, pb, oa, ob] = Array.from({ length: 11 }, (_, i) => id(i + 1));
 await db.exec(`insert into auth.users values ('${ua}'),('${ub}'),('${uc}');

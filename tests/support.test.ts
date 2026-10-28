@@ -264,6 +264,20 @@ test("limites diários são reservados antes de chamadas concorrentes", async (t
   assert.equal(h.db().support!.conversations.filter((c) => c.mode === "waiting").length, 1);
 });
 
+test("limite por minuto do chatbot do site bloqueia conversas simultâneas", async (t) => {
+  let calls = 0;
+  const h = await harness(t, async () => {
+    calls++;
+    return { decision: decision(), tokens: 1 };
+  });
+  h.db().support!.config.siteMinuteLimit = 1;
+  const bob = (await h.service.open("bob")).conversation!;
+  await Promise.all([h.send("Produtos"), h.service.send("bob", bob.id, randomUUID(), "Produtos")]);
+  assert.equal(calls, 1);
+  assert.equal(h.db().support!.usage[0]!.siteRequests, 1);
+  assert.equal(h.db().support!.conversations.filter((c) => c.mode === "waiting").length, 1);
+});
+
 test("consulta de pedido requer o mesmo visitante da compra", async (t) => {
   const h = await harness(t);
   const real = createLaborService(h.directory);

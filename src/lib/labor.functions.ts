@@ -47,12 +47,13 @@ export const laborLogin = createServerFn({ method: "POST" })
         password: z.string().min(12).max(128),
         setup: z.boolean(),
         code: z.string().max(32).optional(),
+        setupToken: z.string().max(128).optional(),
       })
       .parse(v),
   )
   .handler(async ({ data }) => {
     const c = await context();
-    const token = await c.service.login(data.password, data.setup, "local", data.code);
+    const token = await c.service.login(data.password, data.setup, "local", data.code, data.setupToken);
     c.setCookie("labor_admin", token, c.options);
     return { ok: true };
   });

@@ -529,7 +529,7 @@ export function LaborCheckout() {
               </p>
             )}
             <p className="text-[10px] text-muted-foreground text-center mt-3">
-              Sem cobrança. Seus dados ficam neste servidor local.
+              Sem cobrança automática. O pedido é salvo quando você conclui esta etapa.
             </p>
           </aside>
         </div>

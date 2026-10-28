@@ -15,6 +15,9 @@ export const supportConfigSchema = z.object({
   model: z.string().regex(/^(|models\/[a-zA-Z0-9._-]+)$/),
   dailyLimit: z.number().int().min(1).max(10000),
   conversationLimit: z.number().int().min(1).max(100),
+  siteDailyLimit: z.number().int().min(1).max(10000).default(500),
+  siteMinuteLimit: z.number().int().min(1).max(1000).default(10),
+  siteConversationLimit: z.number().int().min(1).max(100).default(10),
 });
 export type SupportConfig = z.infer<typeof supportConfigSchema>;
 export const DEFAULT_SUPPORT: SupportConfig = {
@@ -33,6 +36,9 @@ export const DEFAULT_SUPPORT: SupportConfig = {
   model: "",
   dailyLimit: 1500,
   conversationLimit: 20,
+  siteDailyLimit: 500,
+  siteMinuteLimit: 10,
+  siteConversationLimit: 10,
 };
 export const decisionSchema = z
   .object({
@@ -95,6 +101,7 @@ export type SupportConversation = {
 export type SupportUsage = {
   day: string;
   requests: number;
+  siteRequests?: number;
   tokens: number;
   errors: number;
   discarded: number;
@@ -103,6 +110,7 @@ export type SupportState = {
   config: SupportConfig;
   conversations: SupportConversation[];
   usage: SupportUsage[];
+  minuteUsage?: Array<{ minute: string; siteRequests: number }>;
   keyRevision?: number;
   lastTest?: { at: string; ok: boolean; model: string; error: string } | undefined;
 };

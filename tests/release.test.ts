@@ -31,7 +31,7 @@ test("Vercel não confirma pedidos no adaptador de arquivos temporários", async
         },
         "visitante",
       ),
-      /armazenamento persistente ainda não configurado/,
+      /armazenamento persistente ainda não está configurado/,
     );
   } finally {
     if (previous === undefined) delete process.env["VERCEL"];

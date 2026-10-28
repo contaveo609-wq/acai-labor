@@ -37,7 +37,9 @@ const normalize = (s: string) =>
     .toLowerCase();
 const money = (n: number) => n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 function state(db: LaborDatabase) {
-  return (db.support ??= { config: { ...DEFAULT_SUPPORT }, conversations: [], usage: [] });
+  const current = (db.support ??= { config: { ...DEFAULT_SUPPORT }, conversations: [], usage: [] });
+  current.config = { ...DEFAULT_SUPPORT, ...current.config };
+  return current;
 }
 function published(db: LaborDatabase) {
   return db.products.filter(
@@ -405,7 +407,19 @@ export function createSupportService(deps: Dependencies) {
           return { conversation: view(c) };
         }
         const u = usage(db);
-        if (u.requests >= s.config.dailyLimit || c.requests >= s.config.conversationLimit) {
+        const isSite = c.channel !== "whatsapp";
+        const minute = new Date().toISOString().slice(0, 16);
+        s.minuteUsage = (s.minuteUsage || []).filter((entry) => entry.minute === minute);
+        let minuteCounter = s.minuteUsage[0];
+        if (!minuteCounter)
+          s.minuteUsage.push((minuteCounter = { minute, siteRequests: 0 }));
+        if (
+          u.requests >= s.config.dailyLimit ||
+          c.requests >= (isSite ? s.config.siteConversationLimit : s.config.conversationLimit) ||
+          (isSite &&
+            ((u.siteRequests || 0) >= s.config.siteDailyLimit ||
+              minuteCounter.siteRequests >= s.config.siteMinuteLimit))
+        ) {
           c.mode = "waiting";
           append(
             c,
@@ -416,6 +430,10 @@ export function createSupportService(deps: Dependencies) {
           return { conversation: view(c) };
         }
         u.requests++;
+        if (isSite) {
+          u.siteRequests = (u.siteRequests || 0) + 1;
+          minuteCounter.siteRequests++;
+        }
         c.requests++;
         c.pending = { id: messageId, at: new Date().toISOString(), version: c.version };
         active.add(c.id);

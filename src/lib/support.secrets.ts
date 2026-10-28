@@ -2,7 +2,8 @@
 import { execFile } from "node:child_process";
 import { readFile, mkdir, rename, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { createCipheriv, createDecipheriv, randomBytes, randomUUID } from "node:crypto";
+import { createCipheriv, createDecipheriv, createHash, randomBytes, randomUUID } from "node:crypto";
+import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 let dpapiQueue: Promise<unknown> = Promise.resolve();
 
@@ -25,7 +26,14 @@ function dpapi(value: string, decrypt: boolean, purpose: string): Promise<string
   return result;
 }
 function masterKey() {
-  const key = Buffer.from(process.env["LABOR_SECRET_KEY"] || "", "base64");
+  const configured = process.env["LABOR_SECRET_KEY"];
+  const key = configured
+    ? Buffer.from(configured, "base64")
+    : process.env["LABOR_STORAGE"] === "supabase" && process.env["SUPABASE_SERVICE_ROLE_KEY"]
+      ? createHash("sha256")
+          .update(`acai-labor-vault-v1:${process.env["SUPABASE_SERVICE_ROLE_KEY"]}`)
+          .digest()
+      : Buffer.alloc(0);
   if (key.length !== 32)
     throw new Error("Configure LABOR_SECRET_KEY com 32 bytes em base64 no servidor.");
   return key;
@@ -33,25 +41,38 @@ function masterKey() {
 export function createSupportVault(directory: string, purpose = "gemini") {
   if (!/^[a-z0-9-]{1,50}$/.test(purpose)) throw new Error("Finalidade de cofre inválida.");
   const path = join(directory, `${purpose}-secret.json`);
+  const remote = process.env["LABOR_STORAGE"] === "supabase";
+  const storeId = process.env["LABOR_STORE_ID"] || "acai-labor";
+  async function readRecord() {
+    if (remote) {
+      const response = await (supabaseAdmin as any)
+        .from("labor_secrets")
+        .select("envelope")
+        .eq("store_id", storeId)
+        .eq("purpose", purpose)
+        .maybeSingle();
+      if (response.error) throw new Error("Cofre do banco indisponível.");
+      return response.data?.envelope || null;
+    }
+    try {
+      return JSON.parse(await readFile(path, "utf8"));
+    } catch (e) {
+      if ((e as NodeJS.ErrnoException).code === "ENOENT") return null;
+      throw new Error("Cofre indisponível.");
+    }
+  }
   return {
     async configured() {
       if (purpose === "gemini" && process.env["GEMINI_API_KEY"]) return true;
-      try {
-        await readFile(path);
-        return true;
-      } catch (e) {
-        if ((e as NodeJS.ErrnoException).code === "ENOENT") return false;
-        throw e;
-      }
+      return Boolean(await readRecord());
     },
     async get() {
       let record: { kind: string; data: string; iv?: string; tag?: string };
-      try {
-        record = JSON.parse(await readFile(path, "utf8"));
-      } catch (e) {
-        if ((e as NodeJS.ErrnoException).code !== "ENOENT") throw new Error("Cofre indisponível.");
+      const saved = await readRecord();
+      if (!saved) {
         return purpose === "gemini" ? process.env["GEMINI_API_KEY"] || "" : "";
       }
+      record = saved;
       if (record.kind === "dpapi")
         return Buffer.from(await dpapi(record.data, true, purpose), "base64").toString("utf8");
       const decipher = createDecipheriv(
@@ -72,7 +93,7 @@ export function createSupportVault(directory: string, purpose = "gemini") {
       // deploys portable and lets automated processes use AES-GCM without an
       // interactive Windows profile, while local Windows installs still use
       // DPAPI by default.
-      if (process.platform === "win32" && !process.env["LABOR_SECRET_KEY"])
+      if (!remote && process.platform === "win32" && !process.env["LABOR_SECRET_KEY"])
         record = {
           kind: "dpapi",
           data: await dpapi(Buffer.from(key).toString("base64"), false, purpose),
@@ -88,10 +109,18 @@ export function createSupportVault(directory: string, purpose = "gemini") {
           tag: cipher.getAuthTag().toString("base64"),
         };
       }
-      await mkdir(directory, { recursive: true });
-      const temporary = join(directory, `secret-${randomUUID()}.tmp`);
-      await writeFile(temporary, JSON.stringify(record), { mode: 0o600 });
-      await rename(temporary, path);
+      if (remote) {
+        const response = await (supabaseAdmin as any).from("labor_secrets").upsert(
+          { store_id: storeId, purpose, envelope: record, updated_at: new Date().toISOString() },
+          { onConflict: "store_id,purpose" },
+        );
+        if (response.error) throw new Error("Não foi possível salvar o segredo no banco.");
+      } else {
+        await mkdir(directory, { recursive: true });
+        const temporary = join(directory, `secret-${randomUUID()}.tmp`);
+        await writeFile(temporary, JSON.stringify(record), { mode: 0o600 });
+        await rename(temporary, path);
+      }
     },
   };
 }

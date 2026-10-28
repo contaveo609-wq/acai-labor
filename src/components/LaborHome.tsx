@@ -55,6 +55,13 @@ export function LaborHome() {
                 Conheça a Labor <ArrowDown size={16} />
               </a>
             </div>
+            <a
+              href="#cardapio"
+              className="acai-hero-highlight-link"
+              onClick={() => setSearch("AÇAI LABOR CAIXA 2L")}
+            >
+              <Sparkles size={15} /> Destaque da Labor: conheça a caixa 2 L <ArrowUpRight size={16} />
+            </a>
             <div className="acai-hero-perks">
               <span>
                 <Snowflake size={17} /> Cremoso em cada colherada
@@ -77,7 +84,16 @@ export function LaborHome() {
             <span className="acai-berry berry-two" />
             <span className="acai-leaf leaf-one" />
             <span className="acai-leaf leaf-two" />
-            <AcaiIllustration className="acai-main-bowl" />
+            <div className="acai-hero-product-frame">
+              <img
+                src="/images/acai-labor-caixa-2l-promo.jpeg"
+                alt="Caixa de açaí 2 L da Açaí Labor"
+                width="1080"
+                height="1920"
+                fetchPriority="high"
+              />
+              <span>Destaque da Labor · Caixa 2 L</span>
+            </div>
             <div className="acai-stage-seal">
               MAIS SABOR
               <br />

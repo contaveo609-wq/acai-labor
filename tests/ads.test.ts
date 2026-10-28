@@ -171,7 +171,7 @@ test("Ads: migration isola lojas e navegador não escreve orçamento", async () 
       "create role anon;create role authenticated;create role service_role;create schema auth;create table auth.users(id uuid primary key);create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;",
     );
     await sql.exec(
-      await readFile("supabase/migrations/20261023090000_labor_paid_media.sql", "utf8"),
+      await readFile("docs/legacy-skina-migrations/20261023090000_labor_paid_media.sql", "utf8"),
     );
     const user = randomUUID(),
       id = randomUUID();
