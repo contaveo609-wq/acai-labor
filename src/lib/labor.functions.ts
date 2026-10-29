@@ -60,7 +60,7 @@ export const laborLogin = createServerFn({ method: "POST" })
     const token = await c.service.login(data.password, data.setup, "local", data.code, data.setupToken, data.username, data.remember);
     c.setCookie("labor_admin", token, {
       ...c.options,
-      maxAge: data.remember && process.env["LABOR_STORAGE"] === "supabase" ? 30 * 86400 : 8 * 3600,
+      maxAge: data.remember && (process.env["LABOR_STORAGE"] === "supabase" || process.env["LABOR_SUPABASE_SERVICE_ROLE_KEY"]) ? 30 * 86400 : 8 * 3600,
     });
     return { ok: true };
   });

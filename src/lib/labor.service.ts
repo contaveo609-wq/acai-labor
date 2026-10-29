@@ -49,7 +49,7 @@ export function createLaborService(
   let queue: Promise<unknown> = Promise.resolve();
   const sessions = new Map<string, number>();
   const attempts = new Map<string, { count: number; until: number }>();
-  const remote = process.env["LABOR_STORAGE"] === "supabase";
+  const remote = process.env["LABOR_STORAGE"] === "supabase" || Boolean(process.env["LABOR_SUPABASE_SERVICE_ROLE_KEY"]);
   const remoteStorage = remote ? createLaborSupabaseStorage(storeId, initialCatalog) : null;
   const encryptedData =
     !remote && process.env["LABOR_ENCRYPT_DATA"] === "1"
@@ -135,7 +135,7 @@ export function createLaborService(
     if (!token) return false;
     if (!remote) return (sessions.get(hash(token)) || 0) > Date.now();
     const match = /^(\d{13})\.([a-f0-9]{64})\.([a-f0-9]{64})$/.exec(token);
-    const secret = process.env["LABOR_SESSION_SECRET"] || process.env["SUPABASE_SERVICE_ROLE_KEY"];
+    const secret = process.env["LABOR_SESSION_SECRET"] || process.env["LABOR_SUPABASE_SERVICE_ROLE_KEY"] || process.env["SUPABASE_SERVICE_ROLE_KEY"];
     if (!match || !secret || Number(match[1]) <= Date.now()) return false;
     const message = `${storeId}:${match[1]}:${match[2]}`;
     const expected = createHmac("sha256", secret).update(message).digest("hex");
@@ -273,7 +273,7 @@ export function createLaborService(
         attempts.delete(client);
         const expires = String(Date.now() + (remember ? 30 * 86400000 : 8 * 3600000));
         const nonce = randomBytes(32).toString("hex");
-        const secret = process.env["LABOR_SESSION_SECRET"] || process.env["SUPABASE_SERVICE_ROLE_KEY"];
+        const secret = process.env["LABOR_SESSION_SECRET"] || process.env["LABOR_SUPABASE_SERVICE_ROLE_KEY"] || process.env["SUPABASE_SERVICE_ROLE_KEY"];
         if (!secret) throw new Error("Configure a chave do servidor antes de acessar o painel.");
         const signature = createHmac("sha256", secret)
           .update(`${storeId}:${expires}:${nonce}`)

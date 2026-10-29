@@ -27,11 +27,12 @@ function dpapi(value: string, decrypt: boolean, purpose: string): Promise<string
 }
 function masterKey() {
   const configured = process.env["LABOR_SECRET_KEY"];
+  const serviceRoleKey = process.env["LABOR_SUPABASE_SERVICE_ROLE_KEY"] || process.env["SUPABASE_SERVICE_ROLE_KEY"];
   const key = configured
     ? Buffer.from(configured, "base64")
-    : process.env["LABOR_STORAGE"] === "supabase" && process.env["SUPABASE_SERVICE_ROLE_KEY"]
+    : (process.env["LABOR_STORAGE"] === "supabase" || Boolean(process.env["LABOR_SUPABASE_SERVICE_ROLE_KEY"])) && serviceRoleKey
       ? createHash("sha256")
-          .update(`acai-labor-vault-v1:${process.env["SUPABASE_SERVICE_ROLE_KEY"]}`)
+          .update(`acai-labor-vault-v1:${serviceRoleKey}`)
           .digest()
       : Buffer.alloc(0);
   if (key.length !== 32)
@@ -41,7 +42,7 @@ function masterKey() {
 export function createSupportVault(directory: string, purpose = "gemini") {
   if (!/^[a-z0-9-]{1,50}$/.test(purpose)) throw new Error("Finalidade de cofre inválida.");
   const path = join(directory, `${purpose}-secret.json`);
-  const remote = process.env["LABOR_STORAGE"] === "supabase";
+  const remote = process.env["LABOR_STORAGE"] === "supabase" || Boolean(process.env["LABOR_SUPABASE_SERVICE_ROLE_KEY"]);
   const storeId = process.env["LABOR_STORE_ID"] || "acai-labor";
   async function readRecord() {
     if (remote) {
